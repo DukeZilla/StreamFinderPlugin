@@ -41,24 +41,26 @@ void StreamFinderPlugin::onLoad()
 	//});
 	// You could also use std::bind here
 	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", std::bind(&StreamFinderPlugin::YourPluginMethod, this);
-	std::vector<std::string> StreamFinderPlugin::GetPlayersNames();
-	{
-		ServerWrapper server = gameWrapper->GetCurrentGameState();
-		if (!server) { return; }
-
-		std::vector<std::string> names;
-
-		auto pris = server.GetPRIs();
-		for (auto pri : pris) {
-			if (!pri) continue;
-			names.push_back(pri.GetPlayerName().ToString());
-		};
-
-		return names;
-	}
 
 }
 
 void StreamFinderPlugin::onUnload()
 {
+}
+
+std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
+{
+	std::vector<std::string> names;
+
+	ServerWrapper server = gameWrapper->GetCurrentGameState();
+	if (server)
+	{
+		auto pris = server.GetPRIs();
+		for (auto pri : pris) {
+			if (!pri) continue;
+			names.push_back(pri.GetPlayerName().ToString());
+		};
+	}
+
+	return names;
 }
