@@ -67,6 +67,7 @@ public:
 	void OpenMenu();
 	void CloseMenu();
 	void ToggleMenu();
+	std::vector<std::string> GetPlayersNames();
 
 private:
 	void Log(std::string msg);
