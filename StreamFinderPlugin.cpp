@@ -11,7 +11,7 @@ void StreamFinderPlugin::onLoad()
 	_globalCvarManager = cvarManager;
 	cvarManager->log("Plugin loaded!");
 
-	cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
+	//cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
 	cvarManager->log("Hello notifier!");
 	//}, "", 0);
 
@@ -41,9 +41,20 @@ void StreamFinderPlugin::onLoad()
 	//});
 	// You could also use std::bind here
 	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", std::bind(&StreamFinderPlugin::YourPluginMethod, this);
+	std::vector<std::string> StreamFinderPlugin::GetPlayersNames();
 	{
-		this->Log("Hello World");
-		this->LoadHooks();
+		ServerWrapper server = gameWrapper->GetCurrentGameState();
+		if (!server) { return; }
+
+		std::vector<std::string> names;
+
+		auto pris = server.GetPRIs();
+		for (auto pri : pris) {
+			if (!pri) continue;
+			names.push_back(pri.GetPlayerName().ToString());
+		};
+
+		return names;
 	}
 
 }
@@ -51,15 +62,3 @@ void StreamFinderPlugin::onLoad()
 void StreamFinderPlugin::onUnload()
 {
 }
-
-void StreamFinderPlugin::GetName()
-{
-}
-
-ServerWrapper server = gameWrapper->GetCurrentGameState();
-if (!server) { return; }
-auto pris = server.GetPris();
-for (auto pri : pris) {
-	if (!pri) return;
-	pri.GetName()
-};
