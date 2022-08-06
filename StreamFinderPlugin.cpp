@@ -14,10 +14,11 @@ void StreamFinderPlugin::onLoad()
 {
 	_globalCvarManager = cvarManager;
 	cvarManager->log("Plugin loaded!");
+	cvarManager->log("HELLO WORLD!");
 
-	//cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
+	cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
 	cvarManager->log("Hello notifier!");
-	//}, "", 0);
+	}, "", 0);
 	this->LoadHooks();
 
 	//auto cvar = cvarManager->registerCvar("template_cvar", "hello-cvar", "just a example of a cvar");
@@ -51,16 +52,13 @@ void StreamFinderPlugin::onLoad()
 
 void StreamFinderPlugin::LoadHooks()
 {
-gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
+gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
 gameWrapper->HookEvent("Function TAGame.Team_TA.EventPlayerAdded", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
 gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1));
 gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1));
 }
-
-void StreamFinderPlugin::HandleGameStart(std::string eventName)
-{
 
 	std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
 	{
@@ -84,7 +82,12 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 			cvarManager->log("playerNames");
 		}
 	}
-}
+
+	void StreamFinderPlugin::HandleGameStart(std::string eventName)
+	{
+		GetPlayersNames();
+		cvarManager->log("GET PLAYER NAME FUNCTION LOADED");
+	}
 
 void StreamFinderPlugin::onUnload()
 {
