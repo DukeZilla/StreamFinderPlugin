@@ -11,7 +11,7 @@
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
 
 
-class StreamFinderPlugin: public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::Plugin::PluginSettingsWindow, public BakkesMod::Plugin::PluginWindow
+class StreamFinderPlugin : public BakkesMod::Plugin::BakkesModPlugin 
 {
 
 	//std::shared_ptr<bool> enabled;
@@ -42,8 +42,6 @@ class StreamFinderPlugin: public BakkesMod::Plugin::BakkesModPlugin, public Bakk
 	*/
 public:
 
-	StreamFinderPlugin() : gameWrapper(GameWrapper(NULL)) {}
-
 	virtual void onLoad() override;
 	virtual void onUnload() override;
 
@@ -52,18 +50,14 @@ public:
 	void OpenScoreboard(std::string eventName);
 	void CloseScoreboard(std::string eventName);
 	void LaunchQuickNoteModal();
+	void HandleGameStart(std::string eventName);
+	void HandleGameEnd(std::string eventName);
+	void HandleGameLeave(std::string eventName);
+	void HandlePlayerAdded(std::string eventName);
 
 #pragma region GUI
 
-	void Render() override;
 	void RenderEditNoteModal();
-	std::string GetMenuName() override;
-	std::string GetMenuTitle() override;
-	void SetImGuiContext(uintptr_t ctx) override;
-	bool ShouldBlockInput() override;
-	bool IsActiveOverlay() override;
-	void OnOpen() override;
-	void OnClose() override;
 	void OpenMenu();
 	void CloseMenu();
 	void ToggleMenu();
@@ -73,7 +67,7 @@ private:
 	void Log(std::string msg);
 	bool isWindowOpen = false;
 	bool shouldBlockInput = false;
-	std::string menuTitle = "Stream Sniper";
+	std::string menuTitle = "Stream Finder Plugin";
 	bool openQuickNote = false;
 	std::string playersNoteToEdit = "";
 };
