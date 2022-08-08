@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "StreamFinderPlugin.h"
+#include <windows.h>  
 #include <iostream>
 #include <string>
 #include <fstream>
+
 using namespace std;
 
 
@@ -13,11 +15,9 @@ std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 void StreamFinderPlugin::onLoad()
 {
 	_globalCvarManager = cvarManager;
-	cvarManager->log("Plugin loaded!");
-	cvarManager->log("HELLO WORLD!");
+	cvarManager->log("Stream Finder Plugin loaded!");
 
 	cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
-	cvarManager->log("Hello notifier!");
 	}, "", 0);
 	this->LoadHooks();
 
@@ -52,42 +52,62 @@ void StreamFinderPlugin::onLoad()
 
 void StreamFinderPlugin::LoadHooks()
 {
-gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function TAGame.Team_TA.EventPlayerAdded", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
+gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
+//gameWrapper->HookEvent("Function TAGame.Team_TA.EventPlayerAdded", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
+//gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1));
+//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1));
+//gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1));
 }
 
-	std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
+std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
+{
+	std::vector<std::string> names;
+
+	ServerWrapper server = gameWrapper->GetCurrentGameState();
+	if (server)
 	{
-		std::vector<std::string> names;
-
-		ServerWrapper server = gameWrapper->GetCurrentGameState();
-		if (server)
-		{
-			auto pris = server.GetPRIs();
-			for (auto pri : pris) {
-				if (!pri) continue;
-				names.push_back(pri.GetPlayerName().ToString());
-			};
-		}
-
-		return names;
-
-		std::vector<std::string> playersNames = GetPlayersNames();
-		for (std::string name : playersNames)
-		{
-			cvarManager->log("playerNames");
-		}
+		auto pris = server.GetPRIs();
+		for (auto pri : pris) { //for each pri in pris
+			if (!pri) continue;
+			names.push_back(pri.GetPlayerName().ToString()); //add the player name to the list (names)
+		};
 	}
 
-	void StreamFinderPlugin::HandleGameStart(std::string eventName)
+	return names; //then it returns the list
+}
+
+void StreamFinderPlugin::HandleGameStart(std::string eventName)
+{
+	std::vector<std::string> playersNames = GetPlayersNames(); //playersNames equals to what returns GetPlayersNames()
+	for (std::string name : playersNames)
 	{
-		GetPlayersNames();
-		cvarManager->log("GET PLAYER NAME FUNCTION LOADED");
+		cvarManager->log(name);
+		int arraySize = *(&name + 1) - name;
+		ofstream fw("C:\\%APPDATA%\\Roaming\\bakkesmod\\bakkesmod\\data\\StreamFinder\\names.txt", std::ofstream::out);
+		if (fw.is_open())
+		{
+			//store array contents to text file
+			for (int i = 0; i < arraySize; i++) {
+				fw << name[i] << "\n";
+			}
+			fw.close();
+		}
+		else cout << "Problem with opening file";
+
 	}
+	int main() {
+		
+		ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false);
+
+		while (true) {
+			pwsh.exe - executionpolicy bypass - f "C:\%APPDATA%\Roaming\bakkesmod\bakkesmod\data\StreamFinder\live-status-detector.ps1"
+		}
+		return 0;
+	}
+}
+
+
 
 void StreamFinderPlugin::onUnload()
 {
