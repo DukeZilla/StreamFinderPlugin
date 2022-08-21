@@ -3,6 +3,7 @@
 #include <windows.h>  
 #include <iostream>
 #include <string>
+#include <tchar.h>
 #include <fstream>
 
 using namespace std;
@@ -80,35 +81,31 @@ std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
 void StreamFinderPlugin::HandleGameStart(std::string eventName)
 {
 	std::vector<std::string> playersNames = GetPlayersNames(); //playersNames equals to what returns GetPlayersNames()
+	std::ofstream file("C:\\Users\\dan_r\\AppData\\Roaming\\bakkesmod\\bakkesmod\\data\\StreamFinder\\names.txt");
 	for (std::string name : playersNames)
 	{
 		cvarManager->log(name);
-		int arraySize = *(&name + 1) - name;
-		ofstream fw("C:\\%APPDATA%\\Roaming\\bakkesmod\\bakkesmod\\data\\StreamFinder\\names.txt", std::ofstream::out);
-		if (fw.is_open())
-		{
-			//store array contents to text file
-			for (int i = 0; i < arraySize; i++) {
-				fw << name[i] << "\n";
-			}
-			fw.close();
-		}
-		else cout << "Problem with opening file";
+		file << name << std::endl;
 
 	}
-	int main() {
-		
-		ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false);
-
-		while (true) {
-			pwsh.exe - executionpolicy bypass - f "C:\%APPDATA%\Roaming\bakkesmod\bakkesmod\data\StreamFinder\live-status-detector.ps1"
-		}
-		return 0;
-	}
+	file.close();
+	STARTUPINFO startupInfo;
+	PROCESS_INFORMATION pi;
+	memset(&startupInfo, 0, sizeof(STARTUPINFO));
+	startupInfo.cb = sizeof(STARTUPINFO);
+	startupInfo.wShowWindow = false;
+	TCHAR tcsCommandLine[] = _T("start ""C:\\Users\\dan_r\\AppData\\Roaming\\bakkesmod\\bakkesmod\\data\\StreamFinder\\silent-initiator.vbs""");
+	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	cvarManager->log("Stream Detector Launched.");
 }
-
 
 
 void StreamFinderPlugin::onUnload()
 {
 }
+
+
+// https://cplusplus.com/doc/tutorial/files/
+// https://stackoverflow.com/questions/224225/create-an-application-without-a-window
