@@ -11,3 +11,5 @@ The live stream finding event will also be logged in a text file.
 So in case you're wondering if that "TTV" is live? Well you got it, or if that "Player" is also live? Well damn you got that too!
 
 Stream finder plugin.
+
+**DukeZilla 2022**
