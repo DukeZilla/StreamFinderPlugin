@@ -1,6 +1,6 @@
 # StreamFinderPlugin
 
-A Rocket League Bakkes Mod plugin that will detect live twitch streamers in your matches!
+A Rocket League Bakkesmod plugin that will detect live twitch streamers in your matches!
 
 The program will get the player names from the server, search all the names up on twitch, if the program picks up a live streamer
 a discord notification will be sent to you via webhook link. (DM coming soon...)
