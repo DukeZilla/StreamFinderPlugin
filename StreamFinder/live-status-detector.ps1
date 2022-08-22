@@ -48,6 +48,11 @@ iwr -method post -uri $twitchUri -UseBasicParsing
 $p = (pwd).path
 $i = 0
 
+Get-Content discord-webhook.txt | Foreach-Object{
+	$discord_webhook = $_.Split('')
+	New-Variable -Name $discord_webhook[0] -Value $discord_webhook[1]
+}
+
 echo "Your name has been skipped"
 function nameloop {
 	$i++
@@ -143,7 +148,7 @@ function streamsearch {
 		$trim00 = $split00 | out-string
 		$twitch_username = $trim00.trim('')
 		echo "Player $old_name's twitch username => $twitch_username"
-		$url = "https://discord.com/api/webhooks/1006275125898907849/5G0qivDauQDNrJL9Dw0vh6hDZ1OTn3D-DXNqdgdbe_i-VSqmPhCN2HMmYAkYFgjJYiBc"
+		$url = "$discord_webhook"
 		$content = "Player $old_name is Live on Twitch! Come say hi. https://www.twitch.tv/$twitch_username"
 		$payload = [PSCustomObject]@{ # Sending live notification to discord
 		content = $content
