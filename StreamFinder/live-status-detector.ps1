@@ -150,14 +150,12 @@ function nameloop {
 				'live',
 				'tv',
 				'the',
+				'as',
+				'at',
 				'_',
 				'',
 				' ',
 				'of')
-				
-	$acknowledge = @('ttv',
-					 'twitch',
-					 'tv')
 	
 	if ($status -eq "research") {
 		echo "No live streamer found, researching..."
@@ -184,7 +182,7 @@ function nameloop {
 	$balmsg.Visible = $true
 	$balmsg.ShowBalloonTip(60000)
 	}
-	+x
+	++$x
 	$pass = ''
 	
 	nameloop
