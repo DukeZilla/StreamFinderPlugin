@@ -53,7 +53,7 @@ Get-Content discord-webhook.txt | Foreach-Object{
 	New-Variable -Name $discord_webhook[0] -Value $discord_webhook[1]
 }
 
-if ($discord_webhook -eq $null) {
+function webhook_error {
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
 $path = (Get-Process -id $pid).Path
@@ -63,6 +63,13 @@ $balmsg.BalloonTipText = 'Discord webhook not found, in order to get notificatio
 $balmsg.BalloonTipTitle = "Stream Finder Plugin Error"
 $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
+}
+
+if ($discord_webhook -eq $null) {
+webhook_error
+}
+if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
+webhook_error
 }
 
 echo "Stream search beginning."
@@ -98,14 +105,7 @@ function nameloop {
 	}
 		$name = $name -replace('-', '_')
 		$name = $name -replace ('\W', '')
-	#if ($name -match "live") { # Split "live" from player name
-	#	$name = $name -split "\slive\s"
-	#	echo 'live name split'
-	#}
-	#if ($name -match "twitch") { # Split "twitch" from player name
-	#	$name = $name -split "\stwitch\s"
-	#	echo 'live name split'
-	#}
+
 	echo "Tested name = ""$name"""
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
@@ -142,45 +142,105 @@ function nameloop {
 	}
 	$y = $y-1
 	
+	$ignore = @('in',
+				'on',
+				'twitch',
+				'ttv',
+				'is',
+				'live',
+				'tv',
+				'the',
+				'_',
+				'',
+				' ',
+				'of')
+				
+	$acknowledge = @('ttv',
+					 'twitch',
+					 'tv')
+	
 	if ($status -eq "research") {
+		echo "No live streamer found, researching..."
 		echo "Initiated split searching"
-		for ($x = 0;$x -le $y;$x++) {
-			$rcount = $x+1
-			echo "Split search instance #$rcount"
-			$name = $split_name -split "_" | select -index $x
-			write-host "Researching $name" -foregroundcolor yellow
-			streamsearch
+		research
 		}
-	}
+	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	write-host "No live streamers detected." -foregroundcolor red
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	echo "Search on $old_name has been terminated."
+	
+	if ($old_name -like "*twitch*") {$pass = "rocket"}
+	if ($old_name -like "*tv*") {$pass = "rocket"}
+	if ($old_name -like "*ttv*") {$pass = "rocket"}
+	
+	if ($pass -eq "rocket") {
+	Add-Type -AssemblyName System.Windows.Forms
+	$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+	$path = (Get-Process -id $pid).Path
+	$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+	$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Error
+	$balmsg.BalloonTipText = "Player ""$old_name"" is NOT live on twitch."
+	$balmsg.BalloonTipTitle = "Stream Finder Plugin"
+	$balmsg.Visible = $true
+	$balmsg.ShowBalloonTip(60000)
+	}
+	+x
+	$pass = ''
+	
 	nameloop
 }
 
 function streamsearch {
-	$requestRAW = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
-	$live_status = (ConvertFrom-Json ($requestRAW)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
+	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
+	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
 	if ($live_status -like "*True*") { # Discord Bot send notifications via webhook to server
-		write-host "Live streamer found! => $old_name" -foregroundcolor green
+		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
+		write-host "Live streame channel found! => $old_name" -foregroundcolor green
+		start sound.vbs
+		echo "Sniper sound played ;)"
 		$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 		$trim00 = $split00 | out-string
 		$twitch_username = $trim00.trim('')
+		$trim01 = get-date | out-string # Log file
+		$date = $trim01.trim('')
 		echo "Player $old_name's twitch username => $twitch_username"
 		$url = "$discord_webhook"
-		$content = "Player $old_name is Live on Twitch! Come say hi. https://www.twitch.tv/$twitch_username"
+		$content = "$old_name has a live channel found on $date. Come say hi! https://www.twitch.tv/$twitch_username"
 		$payload = [PSCustomObject]@{ # Sending live notification to discord
 		content = $content
 		}
 		iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json'
 		echo "Discord notification sent!"
 		echo "Discord url = $url"
-		$trim01 = get-date | out-string # Log file
-		$date = $trim01.trim('')
-		echo "Streamer $twitch_username was found live on $date" >> livestreamlog.txt
+		echo "Live streamer found from player $twitch_username on $date" >> livestreamlog.txt
 		echo "Searched $old_name"
+		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 		echo "Search on $old_name has been terminated."
+		Add-Type -AssemblyName System.Windows.Forms
+		$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+		$path = (Get-Process -id $pid).Path
+		$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+		$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Warning
+		$balmsg.BalloonTipText = "Player ""$old_name"" is LIVE on twitch!"
+		$balmsg.BalloonTipTitle = "Stream Finder Plugin"
+		$balmsg.Visible = $true
+		$balmsg.ShowBalloonTip(60000)
 		nameloop
+	}
+}
+
+function research {
+	for ($x = 0;$x -le $y;$x++) {
+		$rcount = $x+1
+		echo "Split search instance #$rcount"
+		$name = $split_name -split "_" | select -index $x
+		if ($ignore -eq $name) {
+			echo "Unnecassary string to search"
+			echo "Skipping ""$name"""
+			continue
+		}
+		write-host "Researching ""$name""" -foregroundcolor yellow
+		streamsearch
 	}
 }
 
