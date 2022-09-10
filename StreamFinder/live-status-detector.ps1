@@ -247,11 +247,6 @@ exit
 
 # LINKS
 
-# client id: 4xeemdr46tyggrk8nuwmcw1l44ln63
-# secret id: 7igcrwskulfppl0jozcm6j9q4qe72y
-
 # https://krookedskull.com/things-to-remember/powershell-accessing-the-twitch-api-v2/
 # https://www.dennisrye.com/post/howto-get-twitch-streams-with-powershell/
 # https://github.com/cog1to/libctwitch/blob/master/example/twitch-remote.c
-
-# cd "C:\Users\dan_r\Desktop\Script Center\Projects\StreamFinderPlugin"
