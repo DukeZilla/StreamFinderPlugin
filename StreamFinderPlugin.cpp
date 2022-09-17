@@ -105,7 +105,7 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 		startupInfo.wShowWindow = false;
 		// Get path for each computer, non-user specific and non-roaming data.
 		// Append product-specific path
-		TCHAR tcsCommandLine[] = _T(start szpath + ""\\bakkesmod\\bakkesmod\\data\\StreamFinder\\silent-initiator.vbs"");
+		TCHAR tcsCommandLine[] = _T("start szpath + ""\\bakkesmod\\bakkesmod\\data\\StreamFinder\\silent - initiator.vbs""");
 		CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
