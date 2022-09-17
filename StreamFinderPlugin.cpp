@@ -5,7 +5,8 @@
 #include <string>
 #include <tchar.h>
 #include <fstream>
-#include <Lmcons.h>
+#include <shlobj_core.h>
+//#include <Lmcons.h>
 
 using namespace std;
 
@@ -23,9 +24,9 @@ void StreamFinderPlugin::onLoad()
 	}, "", 0);
 	this->LoadHooks();
 	
-	char username[UNLEN+1];
-	DWORD username_len = UNLEN+1;
-	GetUserName(username, &username_len);
+	//char username[UNLEN+1];
+	//DWORD username_len = UNLEN+1;
+	//GetUserName(username, &username_len);
 
 	//auto cvar = cvarManager->registerCvar("template_cvar", "hello-cvar", "just a example of a cvar");
 	//auto cvar2 = cvarManager->registerCvar("template_cvar2", "0", "just a example of a cvar with more settings", true, true, -10, true, 10 );
@@ -83,29 +84,35 @@ std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
 	return names; //then it returns the list
 }
 
+
 void StreamFinderPlugin::HandleGameStart(std::string eventName)
 {
 	std::vector<std::string> playersNames = GetPlayersNames(); //playersNames equals to what returns GetPlayersNames()
-	std::ofstream file("C:\\Users\\username\\AppData\\Roaming\\bakkesmod\\bakkesmod\\data\\StreamFinder\\names.txt");
+	std::ofstream stream(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
 	for (std::string name : playersNames)
 	{
 		cvarManager->log(name);
-		file << name << std::endl;
+		stream << name << std::endl;
+	}
+	stream.close();
+	TCHAR szPath[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)))
+	{
+		STARTUPINFO startupInfo;
+		PROCESS_INFORMATION pi;
+		memset(&startupInfo, 0, sizeof(STARTUPINFO));
+		startupInfo.cb = sizeof(STARTUPINFO);
+		startupInfo.wShowWindow = false;
+		// Get path for each computer, non-user specific and non-roaming data.
+		// Append product-specific path
+		TCHAR tcsCommandLine[] = _T(start szpath + ""\\bakkesmod\\bakkesmod\\data\\StreamFinder\\silent-initiator.vbs"");
+		CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		cvarManager->log("Stream Detector Launched.");
 
 	}
-	file.close();
-	STARTUPINFO startupInfo;
-	PROCESS_INFORMATION pi;
-	memset(&startupInfo, 0, sizeof(STARTUPINFO));
-	startupInfo.cb = sizeof(STARTUPINFO);
-	startupInfo.wShowWindow = false;
-	TCHAR tcsCommandLine[] = _T("start ""C:\\Users\\username\\AppData\\Roaming\\bakkesmod\\bakkesmod\\data\\StreamFinder\\silent-initiator.vbs""");
-	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-	cvarManager->log("Stream Detector Launched.");
 }
-
 
 void StreamFinderPlugin::onUnload()
 {
