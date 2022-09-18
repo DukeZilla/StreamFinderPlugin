@@ -155,6 +155,7 @@ function nameloop {
 				'_',
 				'',
 				' ',
+				'*[0-9]*',
 				'of')
 	
 	if ($status -eq "research") {
@@ -191,6 +192,7 @@ function nameloop {
 function streamsearch {
 	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
 	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
+	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
 	if ($live_status -like "*True*") { # Discord Bot send notifications via webhook to server
 		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 		write-host "Live streame channel found! => $old_name" -foregroundcolor green
@@ -230,6 +232,7 @@ function streamsearch {
 function research {
 	for ($x = 0;$x -le $y;$x++) {
 		$rcount = $x+1
+		echo "--------------O"
 		echo "Split search instance #$rcount"
 		$name = $split_name -split "_" | select -index $x
 		if ($ignore -eq $name) {
