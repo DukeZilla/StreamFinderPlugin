@@ -155,7 +155,6 @@ function nameloop {
 				'_',
 				'',
 				' ',
-				'*[0-9]*',
 				'of')
 	
 	if ($status -eq "research") {
@@ -212,19 +211,12 @@ function streamsearch {
 		iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json'
 		echo "Discord notification sent!"
 		echo "Discord url = $url"
-		echo "Live streamer found from player $twitch_username on $date" >> livestreamlog.txt
+		echo "$twitch_username was found live on $date" >> livestreamlog.txt
 		echo "Searched $old_name"
 		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 		echo "Search on $old_name has been terminated."
-		Add-Type -AssemblyName System.Windows.Forms
-		$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
-		$path = (Get-Process -id $pid).Path
-		$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
-		$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Warning
-		$balmsg.BalloonTipText = "Player ""$old_name"" is LIVE on twitch!"
-		$balmsg.BalloonTipTitle = "Stream Finder Plugin"
-		$balmsg.Visible = $true
-		$balmsg.ShowBalloonTip(60000)
+		WinBallon
+		SessionBlacklist
 		nameloop
 	}
 }
@@ -243,6 +235,32 @@ function research {
 		write-host "Researching ""$name""" -foregroundcolor yellow
 		streamsearch
 	}
+}
+
+function WinBallon {
+	Add-Type -AssemblyName System.Windows.Forms
+	$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+	$path = (Get-Process -id $pid).Path
+	$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+	$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Warning
+	$balmsg.BalloonTipText = "Player ""$old_name"" is LIVE on twitch!"
+	$balmsg.BalloonTipTitle = "Stream Finder Plugin"
+	$balmsg.Visible = $true
+	$balmsg.ShowBalloonTip(60000)
+}
+
+function SessionBlacklist {
+	# To prevent from repeadetely sending the same live stream notification
+	$d00 = get-date -format "dd"
+	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { 
+		$d00 > Session-Blacklist.txt
+	}
+	$session_blacklist = gc $p\Session-Blacklist.txt
+	$d01 = $session_blacklist | select -index 0
+	if (-not($d01 -eq $d00)) {
+		$d00 > Session-Blacklist.txt
+	}
+	echo "$old_name" >> Session-Blacklist.txt
 }
 
 nameloop
