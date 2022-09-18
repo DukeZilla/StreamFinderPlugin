@@ -10,7 +10,6 @@
 
 using namespace std;
 
-
 BAKKESMOD_PLUGIN(StreamFinderPlugin, "Stream Finder Plugin", plugin_version, PERMISSION_ALL)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
@@ -24,6 +23,18 @@ void StreamFinderPlugin::onLoad()
 	}, "", 0);
 	this->LoadHooks();
 	
+	string str00 = "set shell = wscript.createobject(\"wscript.shell\")";
+	string str01 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
+	string str02 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\streamfinder.bat\", 0";
+	string str03 = "wscript.quit";
+	ofstream outfile;
+	outfile.open("\\Windows\\Temp\\silent-initiator.vbs");
+	outfile << str00 << endl;
+	outfile << str01 << endl;
+	outfile << str02 << endl;
+	outfile << str03 << endl;
+	outfile.close();
+
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
 	//GetUserName(username, &username_len);
@@ -95,23 +106,18 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 		stream << name << std::endl;
 	}
 	stream.close();
-	TCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)))
-	{
-		STARTUPINFO startupInfo;
-		PROCESS_INFORMATION pi;
-		memset(&startupInfo, 0, sizeof(STARTUPINFO));
-		startupInfo.cb = sizeof(STARTUPINFO);
-		startupInfo.wShowWindow = false;
-		// Get path for each computer, non-user specific and non-roaming data.
-		// Append product-specific path
-		TCHAR tcsCommandLine[] = _T("start szpath + ""\\bakkesmod\\bakkesmod\\data\\StreamFinder\\silent - initiator.vbs""");
-		CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		cvarManager->log("Stream Detector Launched.");
-
-	}
+	STARTUPINFO startupInfo;
+	PROCESS_INFORMATION pi;
+	memset(&startupInfo, 0, sizeof(STARTUPINFO));
+	startupInfo.cb = sizeof(STARTUPINFO);
+	startupInfo.wShowWindow = false;
+	// Get path for each computer, non-user specific and non-roaming data.
+	// Append product-specific path
+	TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\silent-initiator.vbs""");
+	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	cvarManager->log("Stream Detector Launched.");
 }
 
 void StreamFinderPlugin::onUnload()
