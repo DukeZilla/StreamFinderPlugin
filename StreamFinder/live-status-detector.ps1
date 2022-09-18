@@ -1,4 +1,5 @@
-# STREAM FINDER PLUGIN FOR BAKKESMOD ROCKET LEAGUE
+# STREAM FINDER PLUGIN FOR BAKKESMOD ROCKET LEAGUE 
+# By P as in Papi
 
 echo "Stream Finder Debug Log"
 
@@ -63,13 +64,6 @@ $balmsg.BalloonTipText = 'Discord webhook not found, in order to get notificatio
 $balmsg.BalloonTipTitle = "Stream Finder Plugin Error"
 $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
-}
-
-if ($discord_webhook -eq $null) {
-webhook_error
-}
-if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
-webhook_error
 }
 
 echo "Stream search beginning."
@@ -178,7 +172,7 @@ function nameloop {
 	if ($old_name -like "*tv*") {$pass = "rocket"}
 	if ($old_name -like "*ttv*") {$pass = "rocket"}
 	
-	if ($pass -eq "rocket") {
+	if ($pass -eq "rocket") { # Peace of mind notification
 	Add-Type -AssemblyName System.Windows.Forms
 	$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
 	$path = (Get-Process -id $pid).Path
@@ -195,7 +189,7 @@ function nameloop {
 	nameloop
 }
 
-function streamsearch {
+function streamsearch { # The stream finder itself
 	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
 	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
 	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
@@ -211,13 +205,17 @@ function streamsearch {
 		$date = $trim01.trim('')
 		echo "Player $old_name's twitch username => $twitch_username"
 		$url = "$discord_webhook"
-		$content = "$old_name has a live channel found on $date. Come say hi! https://www.twitch.tv/$twitch_username"
+		$content = "$old_name is live! Date: $date. Come say hi ---> https://www.twitch.tv/$twitch_username"
 		$payload = [PSCustomObject]@{ # Sending live notification to discord
 		content = $content
 		}
 		iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json'
-		echo "Discord notification sent!"
-		echo "Discord url = $url"
+		if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
+			webhook_error
+		} Else {
+			echo "Discord notification sent!"
+			echo "Discord url = $url"
+		}
 		echo "$twitch_username was found live on $date" >> livestreamlog.txt
 		echo "Searched $old_name"
 		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -228,7 +226,7 @@ function streamsearch {
 	}
 }
 
-function research {
+function research { # Increase search accuracy
 	for ($x = 0;$x -le $y;$x++) {
 		$rcount = $x+1
 		echo "--------------O"
@@ -244,7 +242,7 @@ function research {
 	}
 }
 
-function WinBallon {
+function WinBallon { # Windows notification
 	Add-Type -AssemblyName System.Windows.Forms
 	$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
 	$path = (Get-Process -id $pid).Path
@@ -256,18 +254,20 @@ function WinBallon {
 	$balmsg.ShowBalloonTip(60000)
 }
 
-function SessionBlacklist {
-	# To prevent from repeadetely sending the same live stream notification
+function SessionBlacklist { # To prevent from repeadetely sending the same live stream notification
 	$d00 = get-date -format "dd"
 	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { 
 		$d00 > Session-Blacklist.txt
+		write-host "Session Blacklist created."
 	}
 	$session_blacklist = gc $p\Session-Blacklist.txt
 	$d01 = $session_blacklist | select -index 0
 	if (-not($d01 -eq $d00)) {
 		$d00 > Session-Blacklist.txt
+		write-host "Session Blacklist created."
 	}
 	echo "$old_name" >> Session-Blacklist.txt
+	write-host "$old_name was added to the session blacklist"
 }
 
 nameloop
