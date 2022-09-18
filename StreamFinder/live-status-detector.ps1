@@ -79,6 +79,7 @@ function nameloop {
 	# Name search refinement
 	$names = gc $p\names.txt
 	$old_name = $names | select -index $i
+	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
@@ -115,13 +116,19 @@ function nameloop {
 		echo "Stream search ended."
 		break
 	}
-	if ($perma_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for one game
+	if ($perma_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer forever
 		echo "Player name $old_name is permanetaly blacklisted"
 		echo "Search skipped."
 		nameloop
 	}
 	if ($blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for one game
 		echo "Player name $old_name has been temporarily blacklisted"
+		echo "Search skipped."
+		nameloop
+	}
+	
+	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for the entire session
+		echo "Player name $old_name has been blacklisted until tomorrow"
 		echo "Search skipped."
 		nameloop
 	}
