@@ -1,4 +1,4 @@
-# StreamFinderPlugin
+# Stream Finder Plugin
 
 A Rocket League Bakkesmod plugin that will detect live twitch streamers in your matches!
 
