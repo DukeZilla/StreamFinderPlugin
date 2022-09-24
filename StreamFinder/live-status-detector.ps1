@@ -163,6 +163,8 @@ function nameloop {
 		echo "Initiated split searching"
 		research
 		}
+	$name = $old_name
+	streamsearch
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	write-host "No live streamers detected." -foregroundcolor red
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -228,19 +230,38 @@ function streamsearch { # The stream finder itself
 		$date = $trim02.trim('')
 		echo "Player $old_name's twitch username => $twitch_username"
 		
-		# v Discord Notification Message v
-		$url = "$discord_webhook"
-		$content00 = "$old_name is LIVE on Twitch!" 
-		$content01 = "Date: $date" 
-		$content02 = "Timestamp: $timestamp"
-		$content03 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
-		$payload = [PSCustomObject]@{ 
-		content = "$content00
-		------------------------------------------------------------O
-		- $content01
-		- $content02
-		- $content03"
+		# Additional Stream info for discord notification
+		$requestRAW01 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/streams?user_login=$twitch_username"
+		$views = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty viewer_count
+		$user_id = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty user_id
+		$requestRAW02 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/videos?user_id=$user_id"
+		$vod_check = (ConvertFrom-Json ($requestRAW02)).Data
+		if ("" -eq $vod_check) {
+			$vod = "False"
+			$warning = "Hurry in!"
+		} else {
+			$vod = "True"
+			$warning = ""
 		}
+		
+# v Discord Notification Message v
+$url = "$discord_webhook"
+$content00 = "$old_name is LIVE on Twitch! $warning" 
+$content01 = "Date: $date" 
+$content02 = "Timestamp: $timestamp"
+$content03 = "Views: $views"
+$content04 = "VODs (Beta): $vod"
+$content05 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
+$payload = [PSCustomObject]@{ 
+content = "$content00
+------------------------------------------------------------O
+__Stream Information__
+- $content01
+- $content02
+- $content03
+- $content04
+- $content05"
+}
 		iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
 		if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
 			webhook_error
