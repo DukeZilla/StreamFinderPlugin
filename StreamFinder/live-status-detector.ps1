@@ -197,7 +197,7 @@ function streamsearch { # The stream finder itself
 		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 		write-host "Live streame channel found! => $old_name" -foregroundcolor green
 		start sound.vbs
-		echo "Sniper sound played ;)"
+		echo "Sound played ;)"
 		$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 		$trim00 = $split00 | out-string
 		$twitch_username = $trim00.trim('')
