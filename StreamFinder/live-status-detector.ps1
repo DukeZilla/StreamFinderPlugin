@@ -60,7 +60,7 @@ $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
 $path = (Get-Process -id $pid).Path
 $balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
 $balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Warning
-$balmsg.BalloonTipText = 'Discord webhook not found, in order to get notifications of live streamers, include a webhook link in the discord-webhook.txt file.'
+$balmsg.BalloonTipText = 'Discord webhook not found, recommended that you include a discord webhook link in the discord-webhook.txt file.'
 $balmsg.BalloonTipTitle = "Stream Finder Plugin Error"
 $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
@@ -232,6 +232,8 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	
 	# Additional Stream info for discord notification
 	$requestRAW01 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/streams?user_login=$twitch_username"
+	$title = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty title
+	$lang = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty language
 	$views = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty viewer_count
 	$user_id = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty user_id
 	$requestRAW02 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/videos?user_id=$user_id"
@@ -246,22 +248,26 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	
 # v Discord Notification Message v
 $url = "$discord_webhook"
-$content00 = "$old_name is LIVE on Twitch! $warning" 
-$content01 = "Date: $date" 
-$content02 = "Timestamp: $timestamp"
-$content03 = "Views: $views"
-$content04 = "VODs: $vod"
-$content05 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
+$content00 = "**$old_name is LIVE on Twitch! $warning**" 
+$content01 = "Title: $title"
+$content02 = "Language: $lang"
+$content03 = "Date found: $date" 
+$content04 = "Timestamp: $timestamp"
+$content05 = "Views: $views"
+$content06 = "VODs: $vod"
+$content07 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
 $payload = [PSCustomObject]@{ 
 content = "$content00
 -------------------------------------------------------O
-__Stream Information__
+__*Stream Information*__
 - $content01
 - $content02
 - $content03
 - $content04
-- $content05"
-} 
+- $content05
+- $content06
+-------------------------------------------------------O
+- $content07 " } 
 # ^ Discord Notification Message ^
 
 	iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
@@ -329,8 +335,9 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 nameloop
 exit
 
-# LINKS
+# LINKS / leftovers
 
+# $quotes = "``````"
 # https://krookedskull.com/things-to-remember/powershell-accessing-the-twitch-api-v2/
 # https://www.dennisrye.com/post/howto-get-twitch-streams-with-powershell/
 # https://github.com/cog1to/libctwitch/blob/master/example/twitch-remote.c
