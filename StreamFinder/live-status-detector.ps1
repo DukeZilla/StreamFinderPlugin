@@ -193,29 +193,62 @@ function streamsearch { # The stream finder itself
 	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
 	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
 	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
-	if ($live_status -like "*True*") { # Discord Bot send notifications via webhook to server
+	if ($live_status -like "*True*") { # Discord Bot notification operations \ webhooks
 		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
-		write-host "Live streame channel found! => $old_name" -foregroundcolor green
+		write-host "Live channel found! ===> $old_name" -foregroundcolor green
 		start sound.vbs
 		echo "Sound played ;)"
+		
 		$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 		$trim00 = $split00 | out-string
-		$twitch_username = $trim00.trim('')
-		$trim01 = get-date | out-string # Log file
-		$date = $trim01.trim('')
-		echo "Player $old_name's twitch username => $twitch_username"
-		$url = "$discord_webhook"
-		$content = "$old_name is live! Date: $date. Come say hi ---> https://www.twitch.tv/$twitch_username"
-		$payload = [PSCustomObject]@{ # Sending live notification to discord
-		content = $content
+		$split01 = $started_at | select -expandproperty started_at # Receiving initial time stamp
+		$time00 = [DateTime]::UtcNow -split ' ' | select -index 1
+		$time01 = $split01 -split " " | select -index 1
+		$tsum = [datetime]$time00 -[datetime]$time01 
+		$t0 = $tsum | select -expandproperty hours
+		$t1 = $tsum | select -expandproperty minutes
+		$t2 = $tsum | select -expandproperty seconds
+		
+		$char0 = $t0 | measure -character | select -expandproperty characters
+		$char1 = $t1 | measure -character | select -expandproperty characters
+		$char2 = $t2 | measure -character | select -expandproperty characters
+		if ($char0 -eq 1 ) {
+		$t0 = "0$t0"
 		}
-		iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json'
+		if ($char1 -eq 1 ) {
+		$t1 = "0$t1"
+		}
+		if ($char2 -eq 1 ) {
+		$t2 = "0$t2"
+		}
+		
+		$timestamp = "$t0`:$t1`:$t2"
+		$twitch_username = $trim00.trim('')
+		$trim02 = get-date | out-string # Log file
+		$date = $trim02.trim('')
+		echo "Player $old_name's twitch username => $twitch_username"
+		
+		# v Discord Notification Message v
+		$url = "$discord_webhook"
+		$content00 = "$old_name is LIVE on Twitch!" 
+		$content01 = "Date: $date" 
+		$content02 = "Timestamp: $timestamp"
+		$content03 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
+		$payload = [PSCustomObject]@{ 
+		content = "$content00
+		------------------------------------------------------------O
+		- $content01
+		- $content02
+		- $content03"
+		}
+		iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
 		if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
 			webhook_error
 		} Else {
 			echo "Discord notification sent!"
 			echo "Discord url = $url"
 		}
+		
 		echo "$twitch_username was found live on $date" >> livestreamlog.txt
 		echo "Searched $old_name"
 		echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
