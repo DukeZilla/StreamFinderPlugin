@@ -74,7 +74,7 @@ function nameloop {
 	$names = gc $p\names.txt
 	$old_name = $names | select -index $i
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
-	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
+	#$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
 	
@@ -120,8 +120,9 @@ function nameloop {
 		echo "Search skipped."
 		nameloop
 	}
-	
+
 	SessionBlacklist
+	
 	
 	streamsearch
 	echo "Searched $old_name"
@@ -315,33 +316,31 @@ function WinBallon { # Windows notification
 
 function SessionBlacklist { # To prevent from repeadetely sending the same live stream notification
 	$d00 = get-date -format "dd"
-	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { 
+	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { # Check if file exists
 		$d00 > Session-Blacklist.txt
 		write-host "Session Blacklist created."
 	}
 	$session_blacklist = gc $p\Session-Blacklist.txt
 	$d01 = $session_blacklist | select -index 0
-	if (-not($d01 -eq $d00)) {
+	if (-not($d01 -eq $d00)) { # Check date
 		$d00 > Session-Blacklist.txt
 		write-host "Session Blacklist recreated."
-	}
-	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for a day
-	echo "Player name $old_name will be blacklisted until the next day"
-	echo "Search skipped."
-	nameloop
 	}
 	if ($key00 -eq "blacklist") {
 	echo "$old_name" >> Session-Blacklist.txt
 	write-host "$old_name was added to the session blacklist"
+	$key00 = "null"
 	}
 }
 
 nameloop
 exit
 
-# LINKS / leftovers
+# Extras
 
 # $quotes = "``````"
 # https://krookedskull.com/things-to-remember/powershell-accessing-the-twitch-api-v2/
 # https://www.dennisrye.com/post/howto-get-twitch-streams-with-powershell/
 # https://github.com/cog1to/libctwitch/blob/master/example/twitch-remote.c
+
+# Jesus is Lord.
