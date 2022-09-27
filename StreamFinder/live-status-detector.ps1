@@ -121,11 +121,7 @@ function nameloop {
 		nameloop
 	}
 	
-	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for the entire session
-		echo "Player name $old_name has been blacklisted until tomorrow"
-		echo "Search skipped."
-		nameloop
-	}
+	SessionBlacklist
 	
 	streamsearch
 	echo "Searched $old_name"
@@ -283,6 +279,7 @@ __*Stream Information*__
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	echo "Search on $old_name has been terminated."
+	$key00 = "blacklist"
 	SessionBlacklist
 	nameloop
 	}
@@ -326,10 +323,17 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	$d01 = $session_blacklist | select -index 0
 	if (-not($d01 -eq $d00)) {
 		$d00 > Session-Blacklist.txt
-		write-host "Session Blacklist created."
+		write-host "Session Blacklist recreated."
 	}
+	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for a day
+	echo "Player name $old_name will be blacklisted until the next day"
+	echo "Search skipped."
+	nameloop
+	}
+	if ($key00 -eq "blacklist") {
 	echo "$old_name" >> Session-Blacklist.txt
 	write-host "$old_name was added to the session blacklist"
+	}
 }
 
 nameloop
