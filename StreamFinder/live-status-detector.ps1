@@ -194,17 +194,18 @@ function nameloop {
 function streamsearch { # The stream finder itself
 $requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
 $live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
-$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
 if ($live_status -like "*True*") { # Discord Bot notification operations \ webhooks
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	write-host "Live channel found! ===> $old_name" -foregroundcolor green
 	start sound.vbs
 	echo "Sound played ;)"
+	WinBallon
 	
+	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
 	$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 	$trim00 = $split00 | out-string
 	$split01 = $started_at | select -expandproperty started_at # Receiving initial time stamp
-	$time00 = [DateTime]::UtcNow -split ' ' | select -index 1 # Converting user's time to UTC time in order to correspond with Twitch's UTC time
+	$time00 = [DateTime]::UtcNow -split ' ' | select -index 1 # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
 	$time01 = $split01 -split " " | select -index 1
 	$tsum = [datetime]$time00 -[datetime]$time01 # Time sum
 	$t0 = $tsum | select -expandproperty hours # Isolating outputs
@@ -250,11 +251,11 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 $url = "$discord_webhook"
 $content00 = "**$old_name is LIVE on Twitch! $warning**" 
 $content01 = "Title: $title"
-$content02 = "Language: $lang"
-$content03 = "Date found: $date" 
-$content04 = "Timestamp: $timestamp"
-$content05 = "Views: $views"
-$content06 = "VODs: $vod"
+$content02 = "Date found: $date" 
+$content03 = "Timestamp: $timestamp"
+$content04 = "Views: $views"
+$content05 = "VODs: $vod"
+$content06 = "Language: $lang"
 $content07 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
 $payload = [PSCustomObject]@{ 
 content = "$content00
@@ -282,7 +283,6 @@ __*Stream Information*__
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	echo "Search on $old_name has been terminated."
-	WinBallon
 	SessionBlacklist
 	nameloop
 	}
