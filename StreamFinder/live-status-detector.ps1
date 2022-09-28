@@ -74,7 +74,7 @@ function nameloop {
 	$names = gc $p\names.txt
 	$old_name = $names | select -index $i
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
-	#$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
+	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
 	
@@ -111,18 +111,18 @@ function nameloop {
 		break
 	}
 	if ($perma_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer forever
-		echo "Player name $old_name is permanetaly blacklisted"
+		echo "Player: $old_name is permanetaly blacklisted"
 		echo "Search skipped."
 		nameloop
 	}
 	if ($blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for one game
-		echo "Player name $old_name has been temporarily blacklisted"
+		echo "Player: $old_name has been temporarily blacklisted"
 		echo "Search skipped."
 		nameloop
 	}
 
+	$key00 = "null"
 	SessionBlacklist
-	
 	
 	streamsearch
 	echo "Searched $old_name"
@@ -201,10 +201,10 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
 	$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 	$trim00 = $split00 | out-string
-	$split01 = $started_at | select -expandproperty started_at # Receiving initial time stamp
-	$time00 = [DateTime]::UtcNow -split ' ' | select -index 1 # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
-	$time01 = $split01 -split " " | select -index 1
-	$tsum = [datetime]$time00 -[datetime]$time01 # Time sum
+	$time00 = $started_at | select -expandproperty started_at # Receiving initial time stamp
+	echo "Stream started at $time00"
+	$time01 = [DateTime]::UtcNow | get-date -Format "MM/dd/yyyy HH:mm:ss" # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
+	$tsum = [datetime]$time01 -[datetime]$time00 # Time sum
 	$t0 = $tsum | select -expandproperty hours # Isolating outputs
 	$t1 = $tsum | select -expandproperty minutes
 	$t2 = $tsum | select -expandproperty seconds
@@ -223,6 +223,7 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	}
 	
 	$timestamp = "$t0`:$t1`:$t2"
+	echo "timestamp: $timestamp"
 	$twitch_username = $trim00.trim('')
 	$trim02 = get-date | out-string # Log file
 	$date = $trim02.trim('')
@@ -318,18 +319,22 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	$d00 = get-date -format "dd"
 	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { # Check if file exists
 		$d00 > Session-Blacklist.txt
-		write-host "Session Blacklist created."
+		write-host "Session blacklist created."
 	}
 	$session_blacklist = gc $p\Session-Blacklist.txt
 	$d01 = $session_blacklist | select -index 0
 	if (-not($d01 -eq $d00)) { # Check date
 		$d00 > Session-Blacklist.txt
-		write-host "Session Blacklist recreated."
+		write-host "Session blacklist expired, file has been recreated."
+	}
+	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
+	echo "Player: $old_name will be blacklisted until tomorrow"
+	echo "Search skipped."
+	nameloop
 	}
 	if ($key00 -eq "blacklist") {
 	echo "$old_name" >> Session-Blacklist.txt
 	write-host "$old_name was added to the session blacklist"
-	$key00 = "null"
 	}
 }
 
