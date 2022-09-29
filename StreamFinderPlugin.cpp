@@ -1,3 +1,5 @@
+// Plugin created by P as in Papi
+// Credit to the bakkesmod programming community for help!
 #include "pch.h"
 #include "StreamFinderPlugin.h"
 #include <windows.h>  
@@ -71,9 +73,9 @@ void StreamFinderPlugin::onLoad()
 void StreamFinderPlugin::LoadHooks()
 {
 gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function TAGame.Team_TA.EventPlayerAdded", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
+//gameWrapper->HookEvent("Function TAGame.GameEvent_TA.AddCar", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
+//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1));
 }
@@ -95,32 +97,7 @@ std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
 	return names; //then it returns the list
 }
 
-
 void StreamFinderPlugin::HandleGameStart(std::string eventName)
-{
-	std::vector<std::string> playersNames = GetPlayersNames(); //playersNames equals to what returns GetPlayersNames()
-	std::ofstream stream(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
-	for (std::string name : playersNames)
-	{
-		cvarManager->log(name);
-		stream << name << std::endl;
-	}
-	stream.close();
-	STARTUPINFO startupInfo;
-	PROCESS_INFORMATION pi;
-	memset(&startupInfo, 0, sizeof(STARTUPINFO));
-	startupInfo.cb = sizeof(STARTUPINFO);
-	startupInfo.wShowWindow = false;
-	// Get path for each computer, non-user specific and non-roaming data.
-	// Append product-specific path
-	TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\silent-initiator.vbs""");
-	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-	cvarManager->log("Stream Detector Launched.");
-}
-
-void StreamFinderPlugin::HandlePlayerAdded(std::string eventName)
 {
 	std::vector<std::string> playersNames = GetPlayersNames(); //playersNames equals to what returns GetPlayersNames()
 	std::ofstream stream(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
