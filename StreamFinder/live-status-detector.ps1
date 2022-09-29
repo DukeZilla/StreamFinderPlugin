@@ -208,6 +208,13 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$t0 = $tsum | select -expandproperty hours # Isolating outputs
 	$t1 = $tsum | select -expandproperty minutes
 	$t2 = $tsum | select -expandproperty seconds
+	$t3 = $tsum | select -expandproperty days
+	if ($t3 -ne 0) { # If the streamer was streaming for more than 24 hours
+	for ($x = 1;$x -le $t3;$x++) {
+		write-host "Streamer has been live for more than 24 hours!"
+		$t0 = $t0 + 24
+		}
+	}
 	
 	$char0 = $t0 | measure -character | select -expandproperty characters
 	$char1 = $t1 | measure -character | select -expandproperty characters
@@ -326,6 +333,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	if (-not($d01 -eq $d00)) { # Check date
 		$d00 > Session-Blacklist.txt
 		write-host "Session blacklist expired, file has been recreated."
+		$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	}
 	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
 	echo "Player: $old_name will be blacklisted until tomorrow"
