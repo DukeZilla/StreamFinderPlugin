@@ -72,6 +72,7 @@ function nameloop {
 	
 	# Name search refinement
 	$names = gc $p\names.txt
+	$botlist = gc $p\botlist.txt
 	$old_name = $names | select -index $i
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
@@ -101,7 +102,6 @@ function nameloop {
 		$name = $name -replace('-', '_')
 		$name = $name -replace ('\W', '')
 
-	echo "Tested name = ""$name"""
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
 		echo 'Search halted, reason: Max number break'
@@ -120,6 +120,14 @@ function nameloop {
 		echo "Search skipped."
 		nameloop
 	}
+	
+	if ($botlist -contains $old_name) { # to prevent from searching bots
+		echo "$old_name has been found as a bot"
+		echo "Search skipped."
+		nameloop
+	}
+	
+	echo "Tested name = ""$name"""
 
 	$key00 = "null"
 	SessionBlacklist
