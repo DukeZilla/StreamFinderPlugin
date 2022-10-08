@@ -67,6 +67,7 @@ $balmsg.ShowBalloonTip(60000)
 }
 
 echo "Stream search beginning."
+
 function nameloop {
 	$i++
 	
@@ -99,6 +100,7 @@ function nameloop {
 		$name = $name -split "ttv"
 		echo 'ttv name split'
 	}
+
 		$name = $name -replace('-', '_')
 		$name = $name -replace ('\W', '')
 
@@ -122,7 +124,7 @@ function nameloop {
 	}
 	
 	if ($botlist -contains $old_name) { # to prevent from searching bots
-		echo "$old_name has been found as a bot"
+		echo "$old_name has been identified as a bot"
 		echo "Search skipped."
 		nameloop
 	}
@@ -141,33 +143,29 @@ function nameloop {
 	$split_name = $name -split "_"
 	$y = $split_name.count
 	
+	function validation {
 	if ($y -ne 1) {
 		$status = "research"
 	} else {
 		$status = "skip"
 	}
 	$y = $y-1
-	
-	$ignore = @('in',
-				'on',
-				'twitch',
-				'ttv',
-				'is',
-				'live',
-				'tv',
-				'the',
-				'as',
-				'at',
-				'_',
-				'',
-				' ',
-				'of')
-	
 	if ($status -eq "research") {
 		echo "No live streamer found, researching..."
 		echo "Initiated split searching"
 		research
 		}
+	}
+	
+	if ($old_name -like "*twitch*") {
+		validation
+	}
+	
+	if ($old_name -like "*live*") {
+		validation
+	}
+	
+	
 	$name = $old_name # Last resort
 	streamsearch
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -212,6 +210,7 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$time00 = $started_at | select -expandproperty started_at # Receiving initial time stamp
 	echo "Stream started at $time00"
 	$time01 = [DateTime]::UtcNow | get-date -Format "MM/dd/yyyy HH:mm:ss" # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
+	echo "Current UTC time: $time01"
 	$tsum = [datetime]$time01 -[datetime]$time00 # Time sum
 	$t0 = $tsum | select -expandproperty hours # Isolating outputs
 	$t1 = $tsum | select -expandproperty minutes
@@ -303,6 +302,27 @@ __*Stream Information*__
 }
 
 function research { # Increase search accuracy
+	$ignore = @('in',
+				'on',
+				'twitch',
+				'ttv',
+				'is',
+				'live',
+				'tv',
+				'the',
+				'as',
+				'at',
+				'_',
+				'',
+				' ',
+				'  ',
+				'of',
+				'RL',
+				'with',
+				'[a-z]',
+				'[A-Z]',
+				'it')
+
 	for ($x = 0;$x -le $y;$x++) {
 		$rcount = $x+1
 		echo "--------------O"
@@ -340,7 +360,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	$d01 = $session_blacklist | select -index 0
 	if (-not($d01 -eq $d00)) { # Check date
 		$d00 > Session-Blacklist.txt
-		write-host "Session blacklist expired, file has been recreated."
+		write-host "Session blacklist expired, list reset done."
 		$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	}
 	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
