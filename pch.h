@@ -11,8 +11,8 @@
 
 #include "imgui/imgui.h"
 
-#include "fmt/core.h"
-#include "fmt/ranges.h"
+#include "bakkesmod/fmt/core.h"
+#include "bakkesmod/fmt/ranges.h"
 
 extern std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
