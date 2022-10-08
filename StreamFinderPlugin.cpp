@@ -12,6 +12,8 @@
 
 using namespace std;
 
+bool StreamFinderEnabled = true;
+
 BAKKESMOD_PLUGIN(StreamFinderPlugin, "Stream Finder Plugin", plugin_version, PERMISSION_ALL)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
@@ -19,23 +21,42 @@ std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 void StreamFinderPlugin::onLoad()
 {
 	_globalCvarManager = cvarManager;
+	cvarManager->log("Hello I'm CoolPlugin B)");
+	cvarManager->registerCvar("stream_finder_enabled", "0", "Enable Plugin", true, true, 0, true, 1)
+		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
+		StreamFinderEnabled = cvar.getBoolValue();
+			});
 	cvarManager->log("Stream Finder Plugin loaded!");
-
-	cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
-	}, "", 0);
+	//gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "streamfinder.png");
+	cvarManager->registerNotifier("cool_toast", [this](std::vector<std::string> args) {
+	gameWrapper->Toast("Stream Finder Plugin", "Plugin is active!", "sfimg", 5.0, ToastType_OK);
+	}, "", PERMISSION_ALL);
 	this->LoadHooks();
+
 	
 	string str00 = "set shell = wscript.createobject(\"wscript.shell\")";
 	string str01 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
 	string str02 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\streamfinder.bat\", 0";
 	string str03 = "wscript.quit";
 	ofstream outfile;
-	outfile.open("\\Windows\\Temp\\silent-initiator.vbs");
+	outfile.open("\\Windows\\Temp\\stream-finder.vbs");
 	outfile << str00 << endl;
 	outfile << str01 << endl;
 	outfile << str02 << endl;
 	outfile << str03 << endl;
 	outfile.close();
+
+	string str04 = "set shell = wscript.createobject(\"wscript.shell\")";
+	string str05 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
+	string str06 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\beta-gui.bat\", 0";
+	string str07 = "wscript.quit";
+	ofstream outfile01;
+	outfile01.open("\\Windows\\Temp\\power-gui.vbs");
+	outfile01 << str04 << endl;
+	outfile01 << str05 << endl;
+	outfile01 << str06 << endl;
+	outfile01 << str07 << endl;
+	outfile01.close();
 
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
@@ -114,11 +135,12 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 	startupInfo.wShowWindow = false;
 	// Get path for each computer, non-user specific and non-roaming data.
 	// Append product-specific path
-	TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\silent-initiator.vbs""");
+	TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\stream-finder.vbs""");
 	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	cvarManager->log("Stream Detector Launched.");
+	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
 }
 
 void StreamFinderPlugin::onUnload()
