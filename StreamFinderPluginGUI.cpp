@@ -8,17 +8,14 @@
 
 using namespace std;
 
+
 // Plugin Settings Window code here
 static void ShowExampleAppDocuments(bool* p_open);
-static bool show_app_documents = false;
+
 
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return "Stream Finder Plugin";
-}
-
-void StreamFinderPlugin::SetImGuiContext(uintptr_t ctx) {
-	ImGui::SetCurrentContext(reinterpret_cast<ImGuiContext*>(ctx));
 }
 
 // Render the plugin settings here
@@ -28,6 +25,8 @@ void StreamFinderPlugin::SetImGuiContext(uintptr_t ctx) {
 
 void StreamFinderPlugin::RenderSettings() {
 	// ImGui::TextUnformatted("Settings");
+    static bool show_app_documents = false;
+    if (show_app_documents)           ShowExampleAppDocuments(&show_app_documents);
     ImGui::TextUnformatted("PRE ALPHA Version 0.9.23 | This Plugin is still under development");
 
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
@@ -46,12 +45,12 @@ void StreamFinderPlugin::RenderSettings() {
 		ImGui::SetTooltip("Toggle Stream Finder Plugin");
 	}
 
-    if (ImGui::Button("Open Window")) {
+    if (ImGui::Button("Open Setting Manager")) {
         ShowExampleAppDocuments(&show_app_documents);
     }
 
     if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Stream Finder File Manager");
+        ImGui::SetTooltip("Stream Finder Settings Manager");
     }
 
     ImGui::TextUnformatted("-------------------------------------------O");
@@ -77,14 +76,14 @@ void StreamFinderPlugin::RenderSettings() {
 
     if (ImGui::CollapsingHeader("Help"))
     {
-        ImGui::Text("ABOUT THIS DEMO:");
-        ImGui::BulletText("Sections below are demonstrating many aspects of the library.");
+        ImGui::Text("DISCORD WEBHOOK:");
+        ImGui::BulletText("To set this up, all you need to do is to go");
         ImGui::BulletText("The \"Examples\" menu above leads to more demo contents.");
         ImGui::BulletText("The \"Tools\" menu above gives access to: About Box, Style Editor,\n"
             "and Metrics/Debugger (general purpose Dear ImGui debugging tool).");
         ImGui::Separator();
 
-        ImGui::Text("PROGRAMMER GUIDE:");
+        ImGui::Text("BLACKLIST INFO:");
         ImGui::BulletText("See the ShowDemoWindow() code in imgui_demo.cpp. <- you are here!");
         ImGui::BulletText("See comments in imgui.cpp.");
         ImGui::BulletText("See example applications in the examples/ folder.");
@@ -100,15 +99,11 @@ void StreamFinderPlugin::RenderSettings() {
     ImGui::TextUnformatted("Plugin made by P as in Papi | Special thanks to the bakkesmod programming community for help!");
 }
 
-//-----------------------------------------------------------------------------
-// [SECTION] Example App: Documents Handling / ShowExampleAppDocuments()
-//-----------------------------------------------------------------------------
-
 // Simplified structure to mimic a Document model
 struct MyDocument
 {
     const char* Name;       // Document title
-    bool        Open;       // Set when open (we keep an array of all available documents to simplify demo code!)
+    bool        Open;       // Set when open (we keep an array of all available documents to simplify code!)
     bool        OpenPrev;   // Copy of Open from last update.
     bool        Dirty;      // Set when the document has been modified
     bool        WantClose;  // Set when the document
@@ -133,7 +128,7 @@ struct MyDocument
         ImGui::PushID(doc);
         ImGui::Text("Document \"%s\"", doc->Name);
         ImGui::PushStyleColor(ImGuiCol_Text, doc->Color);
-        ImGui::TextWrapped("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+        ImGui::TextWrapped("Hello I am a professional Finger Tipist. Would you care for some tea?");
         ImGui::PopStyleColor();
         if (ImGui::Button("Modify", ImVec2(100, 0)))
             doc->Dirty = true;
@@ -166,12 +161,11 @@ struct ExampleAppDocuments
 
     ExampleAppDocuments()
     {
-        Documents.push_back(MyDocument("Lettuce", true, ImVec4(0.4f, 0.8f, 0.4f, 1.0f)));
-        Documents.push_back(MyDocument("Eggplant", true, ImVec4(0.8f, 0.5f, 1.0f, 1.0f)));
-        Documents.push_back(MyDocument("Carrot", true, ImVec4(1.0f, 0.8f, 0.5f, 1.0f)));
-        Documents.push_back(MyDocument("Tomato", false, ImVec4(1.0f, 0.3f, 0.4f, 1.0f)));
-        Documents.push_back(MyDocument("A Rather Long Title", false));
-        Documents.push_back(MyDocument("Some Document", false));
+        Documents.push_back(MyDocument("Discord Webhook", true, ImVec4(0.4f, 0.8f, 0.4f, 1.0f)));
+        Documents.push_back(MyDocument("Temporary Blacklist", true, ImVec4(0.8f, 0.5f, 1.0f, 1.0f)));
+        Documents.push_back(MyDocument("Session Blacklist", true, ImVec4(1.0f, 0.8f, 0.5f, 1.0f)));
+        Documents.push_back(MyDocument("Permanent Blacklist", true, ImVec4(1.0f, 0.3f, 0.4f, 1.0f)));
+        Documents.push_back(MyDocument("Live Stream Log", false));
     }
 };
 
@@ -202,7 +196,7 @@ void ShowExampleAppDocuments(bool* p_open)
     static bool opt_reorderable = true;
     static ImGuiTabBarFlags opt_fitting_flags = ImGuiTabBarFlags_FittingPolicyDefault_;
 
-    bool window_contents_visible = ImGui::Begin("Example: Documents", p_open, ImGuiWindowFlags_MenuBar);
+    bool window_contents_visible = ImGui::Begin("Stream Finder Settings Manager", p_open, ImGuiWindowFlags_MenuBar);
     if (!window_contents_visible)
     {
         ImGui::End();
@@ -229,7 +223,7 @@ void ShowExampleAppDocuments(bool* p_open)
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Close All Documents", NULL, false, open_count > 0))
+            if (ImGui::MenuItem("Close All Files", NULL, false, open_count > 0))
                 for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
                     app.Documents[doc_n].DoQueueClose();
             if (ImGui::MenuItem("Exit", "Ctrl+F4") && p_open)
@@ -392,6 +386,12 @@ void ShowExampleAppDocuments(bool* p_open)
 
 void StreamFinderPlugin::Render()
 {
+    if (!this->isWindowOpen) {
+        cvarManager->executeCommand("togglemenu " + GetMenuName());
+
+        return;
+    }
+
 	if (!ImGui::Begin(menuTitle_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None))
 	{
 		// Early out if the window is collapsed, as an optimization.
@@ -423,6 +423,7 @@ std::string StreamFinderPlugin::GetMenuTitle()
 void StreamFinderPlugin::SetImGuiContext(uintptr_t ctx)
 {
 	ImGui::SetCurrentContext(reinterpret_cast<ImGuiContext*>(ctx));
+    ImGui::GetIO().ConfigWindowsResizeFromEdges = true;
 }
 
 // Should events such as mouse clicks/key inputs be blocked so they won't reach the game
@@ -449,3 +450,7 @@ void StreamFinderPlugin::OnClose()
 	isWindowOpen_ = false;
 }
 
+void StreamFinderPlugin::ToggleMenu()
+{
+    cvarManager->executeCommand("togglemenu " + GetMenuName());
+}
