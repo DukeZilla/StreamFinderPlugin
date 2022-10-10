@@ -146,15 +146,9 @@ function nameloop {
 	function validation {
 	if ($y -ne 1) {
 		$status = "research"
+		$y = $y-1
 	} else {
 		$status = "skip"
-	}
-	$y = $y-1
-	if ($status -eq "research") {
-		echo "No live streamer found, researching..."
-		echo "Initiated split searching"
-		research
-		}
 	}
 	
 	if ($old_name -like "*twitch*") {
@@ -165,9 +159,32 @@ function nameloop {
 		validation
 	}
 	
+	if ($old_name -like "*ttv*") {
+		validation
+	}
 	
+	if ($old_name -like "*tv*") {
+		validation
+	}
+	
+	if ($old_name -like "*tiktok*") {
+		validation
+	}
+	
+	if ($old_name -like "*yt*") {
+		validation
+	}
+	
+	if ($status -eq "research") {
+		echo "No live streamer found, researching..."
+		echo "Initiated split searching"
+		research
+		}
+	}
+		
 	$name = $old_name # Last resort
 	streamsearch
+	
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	write-host "No live streamers detected." -foregroundcolor red
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
