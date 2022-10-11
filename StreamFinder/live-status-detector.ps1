@@ -150,30 +150,14 @@ function nameloop {
 	} else {
 		$status = "skip"
 	}
-	
-	if ($old_name -like "*twitch*") {
-		validation
 	}
 	
-	if ($old_name -like "*live*") {
-		validation
-	}
-	
-	if ($old_name -like "*ttv*") {
-		validation
-	}
-	
-	if ($old_name -like "*tv*") {
-		validation
-	}
-	
-	if ($old_name -like "*tiktok*") {
-		validation
-	}
-	
-	if ($old_name -like "*yt*") {
-		validation
-	}
+	if ($old_name -like "*twitch*") {validation}
+	if ($old_name -like "*live*") {validation}
+	if ($old_name -like "*ttv*") {validation}
+	if ($old_name -like "*tv*") {validation}
+	if ($old_name -like "*tiktok*") {validation}
+	if ($old_name -like "*yt*") {validation}
 	
 	if ($status -eq "research") {
 		echo "No live streamer found, researching..."
@@ -191,6 +175,7 @@ function nameloop {
 	echo "Search on $old_name has been terminated."
 	
 	if ($old_name -like "*twitch*") {$pass = "rocket"}
+	if ($old_name -like "*live*") {$pass = "rocket"}
 	if ($old_name -like "*tv*") {$pass = "rocket"}
 	if ($old_name -like "*ttv*") {$pass = "rocket"}
 	
@@ -243,15 +228,9 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$char0 = $t0 | measure -character | select -expandproperty characters
 	$char1 = $t1 | measure -character | select -expandproperty characters
 	$char2 = $t2 | measure -character | select -expandproperty characters
-	if ($char0 -eq 1 ) {
-	$t0 = "0$t0"
-	}
-	if ($char1 -eq 1 ) {
-	$t1 = "0$t1"
-	}
-	if ($char2 -eq 1 ) {
-	$t2 = "0$t2"
-	}
+	if ($char0 -eq 1 ) {$t0 = "0$t0"}
+	if ($char1 -eq 1 ) {$t1 = "0$t1"}
+	if ($char2 -eq 1 ) {$t2 = "0$t2"}
 	
 	$timestamp = "$t0`:$t1`:$t2"
 	echo "timestamp: $timestamp"
@@ -338,7 +317,9 @@ function research { # Increase search accuracy
 				'with',
 				'[a-z]',
 				'[A-Z]',
-				'it')
+				'it',
+				'yt',
+				'tiktok')
 
 	for ($x = 0;$x -le $y;$x++) {
 		$rcount = $x+1
