@@ -48,10 +48,10 @@ void StreamFinderPlugin::onLoad()
 
 	string str04 = "set shell = wscript.createobject(\"wscript.shell\")";
 	string str05 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-	string str06 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\beta-gui.bat\", 0";
+	string str06 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\"";
 	string str07 = "wscript.quit";
 	ofstream outfile01;
-	outfile01.open("\\Windows\\Temp\\power-gui.vbs");
+	outfile01.open("\\Windows\\Temp\\directory.vbs");
 	outfile01 << str04 << endl;
 	outfile01 << str05 << endl;
 	outfile01 << str06 << endl;
