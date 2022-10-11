@@ -60,7 +60,7 @@ $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
 $path = (Get-Process -id $pid).Path
 $balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
 $balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Warning
-$balmsg.BalloonTipText = 'Discord webhook not found, recommended that you include a discord webhook link in the discord-webhook.txt file.'
+$balmsg.BalloonTipText = 'Discord webhook not found, recommended to setup your discord webhook in the Stream Finder settings.'
 $balmsg.BalloonTipTitle = "Stream Finder Plugin Error"
 $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
@@ -149,7 +149,7 @@ function nameloop {
 		$y = $y-1
 	} else {
 		$status = "skip"
-	}
+		}
 	}
 	
 	if ($old_name -like "*twitch*") {validation}
@@ -158,6 +158,7 @@ function nameloop {
 	if ($old_name -like "*tv*") {validation}
 	if ($old_name -like "*tiktok*") {validation}
 	if ($old_name -like "*yt*") {validation}
+	if ($old_name -like "*youtube*") {validation}
 	
 	if ($status -eq "research") {
 		echo "No live streamer found, researching..."
@@ -311,15 +312,16 @@ function research { # Increase search accuracy
 				'_',
 				'',
 				' ',
-				'  ',
 				'of',
 				'RL',
 				'with',
 				'[a-z]',
 				'[A-Z]',
+				'[0-9]',
 				'it',
 				'yt',
-				'tiktok')
+				'tiktok',
+				'youtube')
 
 	for ($x = 0;$x -le $y;$x++) {
 		$rcount = $x+1
