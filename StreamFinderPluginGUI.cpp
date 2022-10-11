@@ -11,8 +11,7 @@ using namespace std;
 
 // Plugin Settings Window code here
 static void ShowExampleAppDocuments(bool* p_open);
-
-
+ImGuiWindowFlags window_flags = 0;
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return "Stream Finder Plugin";
@@ -27,6 +26,7 @@ void StreamFinderPlugin::RenderSettings() {
 	// ImGui::TextUnformatted("Settings");
     static bool show_app_documents = false;
     if (show_app_documents)           ShowExampleAppDocuments(&show_app_documents);
+
     ImGui::TextUnformatted("PRE ALPHA Version 0.9.23 | This Plugin is still under development");
 
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
@@ -56,17 +56,6 @@ void StreamFinderPlugin::RenderSettings() {
     ImGui::TextUnformatted("-------------------------------------------O");
 
     if (ImGui::Button("Open Stream Finder Folder")) {
-        string str00 = "set shell = wscript.createobject(\"wscript.shell\")";
-        string str01 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-        string str02 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\"";
-        string str03 = "wscript.quit";
-        ofstream outfile;
-        outfile.open("\\Windows\\Temp\\directory.vbs");
-        outfile << str00 << endl;
-        outfile << str01 << endl;
-        outfile << str02 << endl;
-        outfile << str03 << endl;
-        outfile.close();
         system("C:\\Windows\\Temp\\directory.vbs");
     }
 
