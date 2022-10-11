@@ -46,14 +46,30 @@ void StreamFinderPlugin::RenderSettings() {
 	}
 
     if (ImGui::Button("Open Setting Manager")) {
-        ShowExampleAppDocuments(&show_app_documents);
+        ImGui::OpenPopup("Stream Finder Settings Manager");
+        if (ImGui::BeginPopup("Stream Finder Settings Manager"))
+        {
+            ShowExampleAppDocuments(&show_app_documents);
+            ImGui::EndMenu();
+        }
     }
 
     if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Stream Finder Settings Manager");
     }
 
-    ImGui::TextUnformatted("-------------------------------------------O");
+    ImGui::TextUnformatted("-----------------------------------------------------O");
+
+    if (ImGui::Button("Check for updates")) {
+        system("C:\\Windows\\Temp\\directory.vbs");
+        //work in progress
+    }
+
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Update?!");
+    }
+
+    ImGui::TextUnformatted("-----------------------------------------------------O");
 
     if (ImGui::Button("Open Stream Finder Folder")) {
         system("C:\\Windows\\Temp\\directory.vbs");
@@ -63,26 +79,35 @@ void StreamFinderPlugin::RenderSettings() {
         ImGui::SetTooltip("Opens the Stream Finder directory folder");
     }
 
+    ImGui::TextUnformatted("-----------------------------------------------------O");
+
     if (ImGui::CollapsingHeader("Help"))
     {
+        ImGui::Text("SETTINGS MANAGER 101");
+        ImGui::Separator();
         ImGui::Text("DISCORD WEBHOOK:");
-        ImGui::BulletText("To set this up, all you need to do is to go");
-        ImGui::BulletText("The \"Examples\" menu above leads to more demo contents.");
-        ImGui::BulletText("The \"Tools\" menu above gives access to: About Box, Style Editor,\n"
-            "and Metrics/Debugger (general purpose Dear ImGui debugging tool).");
+        ImGui::BulletText("- How to set up the discord webhook -");
+        ImGui::BulletText("1.) Open Discord and head to your personal server");
+        ImGui::BulletText("2.) Right click on the channel you wish to receive stream notifications with and click \"Edit Channel\"");
+        ImGui::BulletText("3.) Click \"Intergrations\" and then click \"Create Webhook Once you have created your webhook,\n"
+            "copy the webhook URL and paste it in the text box");
+        ImGui::BulletText("More info can be found on the discord support site.");
         ImGui::Separator();
 
         ImGui::Text("BLACKLIST INFO:");
-        ImGui::BulletText("See the ShowDemoWindow() code in imgui_demo.cpp. <- you are here!");
-        ImGui::BulletText("See comments in imgui.cpp.");
-        ImGui::BulletText("See example applications in the examples/ folder.");
-        ImGui::BulletText("Read the FAQ at http://www.dearimgui.org/faq/");
-        ImGui::BulletText("Set 'io.ConfigFlags |= NavEnableKeyboard' for keyboard controls.");
-        ImGui::BulletText("Set 'io.ConfigFlags |= NavEnableGamepad' for gamepad controls.");
+        ImGui::BulletText("- Information on blacklists -");
+        ImGui::BulletText("Temporary Blacklist: This will blacklist a player for 1 game to prevent notification spam.");
+        ImGui::BulletText("Session Blacklist: If a streamer is found, they will be blacklisted for the entire day.\n"
+            "The session blacklist will expire after the day is over. (Another spam prevention)");
+        ImGui::BulletText("Permanent Blacklist: Whatever names are included in this list will be completely ignored by the program indefinitely,.");
+        ImGui::BulletText("Bot list: All bot names have been blacklisted by default to prevent false positives.");
         ImGui::Separator();
-
-        ImGui::Text("USER GUIDE:");
-        ImGui::ShowUserGuide();
+        ImGui::Text("EXTRA INFO:");
+        ImGui::BulletText("The program will also log all the stream finding events in a text file: \"livestreamlog.txt\"");
+        ImGui::BulletText("If you ever want to see the stream finder folder you can click the button above.");\
+        ImGui::BulletText("If there are any bugs please sumbit a ticket on the stream finder github page!");
+        //ImGui::BulletText("You may also modify the sound effect, be sure the sound file name is modified in \"sound.vbs\"");
+        ImGui::Separator();
     }
 
     ImGui::TextUnformatted("Plugin made by P as in Papi | Special thanks to the bakkesmod programming community for help!");
