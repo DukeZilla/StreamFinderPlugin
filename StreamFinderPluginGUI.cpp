@@ -46,27 +46,13 @@ void StreamFinderPlugin::RenderSettings() {
 	}
 
     if (ImGui::Button("Open Setting Manager")) {
-        ImGui::OpenPopup("Stream Finder Settings Manager");
-        if (ImGui::BeginPopup("Stream Finder Settings Manager"))
-        {
-            ShowExampleAppDocuments(&show_app_documents);
-            ImGui::EndMenu();
-        }
+        ImGui::Begin("Stream Finder Settings Manager");
+        ShowExampleAppDocuments(&show_app_documents);
+        ImGui::End();
     }
 
     if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Stream Finder Settings Manager");
-    }
-
-    ImGui::TextUnformatted("-----------------------------------------------------O");
-
-    if (ImGui::Button("Check for updates")) {
-        system("C:\\Windows\\Temp\\directory.vbs");
-        //work in progress
-    }
-
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Update?!");
     }
 
     ImGui::TextUnformatted("-----------------------------------------------------O");
@@ -79,7 +65,7 @@ void StreamFinderPlugin::RenderSettings() {
         ImGui::SetTooltip("Opens the Stream Finder directory folder");
     }
 
-    ImGui::TextUnformatted("-----------------------------------------------------O");
+    ImGui::TextUnformatted("------------------------------------------------------O");
 
     if (ImGui::CollapsingHeader("Help"))
     {
@@ -283,7 +269,7 @@ void ShowExampleAppDocuments(bool* p_open)
             // [DEBUG] Stress tests
             //if ((ImGui::GetFrameCount() % 30) == 0) docs[1].Open ^= 1;            // [DEBUG] Automatically show/hide a tab. Test various interactions e.g. dragging with this on.
             //if (ImGui::GetIO().KeyCtrl) ImGui::SetTabItemSelected(docs[1].Name);  // [DEBUG] Test SetTabItemSelected(), probably not very useful as-is anyway..
-
+            
             // Submit Tabs
             for (int doc_n = 0; doc_n < app.Documents.Size; doc_n++)
             {
