@@ -1,4 +1,4 @@
-# STREAM FINDER PLUGIN FOR BAKKESMOD ROCKET LEAGUE 
+# ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
 echo "Stream Finder Debug Log"
@@ -49,10 +49,8 @@ iwr -method post -uri $twitchUri -UseBasicParsing
 $p = (pwd).path
 $i = -1
 
-Get-Content discord-webhook.txt | Foreach-Object{
-	$discord_webhook = $_.Split('')
-	New-Variable -Name $discord_webhook[0] -Value $discord_webhook[1]
-}
+# Discord webhook linke to variable
+$discord_webhook = gc $p\discord-webhook.txt
 
 function webhook_error {
 Add-Type -AssemblyName System.Windows.Forms
@@ -141,9 +139,7 @@ function nameloop {
 	$amount = "check"
 	
 	function validation {
-		if ($amount -eq "pass") {
-			break
-		}
+		if ($amount -eq "pass") {break}
 		
 		if ($name -match "twitch") { # Split "twitch" from player name
 			$name = $name -split "twitch"
@@ -194,7 +190,7 @@ function nameloop {
 	$path = (Get-Process -id $pid).Path
 	$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
 	$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Error
-	$balmsg.BalloonTipText = "Player ""$old_name"" is NOT live on twitch."
+	$balmsg.BalloonTipText = "Player ""$old_name"" is NOT live."
 	$balmsg.BalloonTipTitle = "Stream Finder Plugin"
 	$balmsg.Visible = $true
 	$balmsg.ShowBalloonTip(60000)
@@ -219,11 +215,7 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 	$trim00 = $split00 | out-string
 	$power_version = $PSVersionTable.PSVersion | select -expandproperty Major
-	if ($power_version -eq "7") {
-		Psv7
-	} else {
-		Psv5
-	}
+	if ($power_version -eq "7") {Psv7} else {Psv5}
 	echo "Stream started at $time00"
 	echo "Current UTC time: $time01"
 	$tsum = [datetime]$time01 -[datetime]$time00 # Time sum
@@ -293,9 +285,7 @@ __*Stream Information*__
 # ^ Discord Notification Message ^
 
 	iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
-	if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
-		webhook_error
-	} Else {
+	if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {webhook_error} Else {
 		echo "Discord notification sent!"
 		echo "Discord url = $url"
 	}
@@ -336,7 +326,6 @@ function research { # Increase search accuracy
 				'tiktok',
 				'youtube')
 				
-
 	for ($x = 0;$x -le $y01;$x++) { # Method 1
 		$rcount = $x+1
 		echo "--------------O"
@@ -400,7 +389,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	}
 	if ($key00 -eq "blacklist") {
 	echo "$old_name" >> Session-Blacklist.txt
-	write-host "$old_name was added to the session blacklist"
+	write-host "$old_name has been added to the session blacklist"
 	}
 }
 
