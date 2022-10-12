@@ -149,7 +149,6 @@ function nameloop {
 		$y = $y-1
 	} else {
 		$status = "skip"
-		}
 	}
 	
 	if ($old_name -like "*twitch*") {validation}
