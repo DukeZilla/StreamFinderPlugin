@@ -333,26 +333,11 @@ function research { # Increase search accuracy
 				'tiktok',
 				'youtube')
 
-	for ($x = 0;$x -le $y00;$x++) { # Method 1
+	for ($x = 0;$x -le $y01;$x++) { # Method 1
 		$rcount = $x+1
 		echo "--------------O"
 		echo "Split search instance #$rcount"
 		echo "Method 1"
-		$name = $split_name00 -split "_" | select -index $x
-		if ($ignore -eq $name) {
-			echo "Unnecassary string to search"
-			echo "Skipping ""$name"""
-			continue
-		}
-		write-host "Researching ""$name""" -foregroundcolor yellow
-		streamsearch
-	}
-	
-	for ($x = 0;$x -le $y01;$x++) { # Method 2
-		$rcount = $x+1
-		echo "--------------O"
-		echo "Split search instance #$rcount"
-		echo "Method 2"
 		$old_name = $split_name01 -split "\W" | select -index $x
 		if ($ignore -eq $old_name) {
 			echo "Unnecassary string to search"
@@ -360,6 +345,21 @@ function research { # Increase search accuracy
 			continue
 		}
 		write-host "Researching ""$old_name""" -foregroundcolor yellow
+		streamsearch
+	}
+	
+	for ($x = 0;$x -le $y00;$x++) { # Method 2
+		$rcount = $x+1
+		echo "--------------O"
+		echo "Split search instance #$rcount"
+		echo "Method 2"
+		$name = $split_name00 -split "_" | select -index $x
+		if ($ignore -eq $name) {
+			echo "Unnecassary string to search"
+			echo "Skipping ""$name"""
+			continue
+		}
+		write-host "Researching ""$name""" -foregroundcolor yellow
 		streamsearch
 	}
 }
