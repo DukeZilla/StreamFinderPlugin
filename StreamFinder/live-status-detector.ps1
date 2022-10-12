@@ -137,34 +137,44 @@ function nameloop {
 	streamsearch
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
-	$name = $name.trim('')
-	$name = $name.trim(' ')
-	$name = $name | where{$_ -ne ""}
-	$split_name = $name -split "_"
-	$y = $split_name.count
+	
+	$amount = "check"
 	
 	function validation {
-	if ($y -ne 1) {
-		$status = "research"
-		$y = $y-1
-	} else {
-		$status = "skip"
-	}
-	
-	if ($old_name -like "*twitch*") {validation}
-	if ($old_name -like "*live*") {validation}
-	if ($old_name -like "*ttv*") {validation}
-	if ($old_name -like "*tv*") {validation}
-	if ($old_name -like "*tiktok*") {validation}
-	if ($old_name -like "*yt*") {validation}
-	if ($old_name -like "*youtube*") {validation}
-	
-	if ($status -eq "research") {
+		if ($amount -eq "pass") {
+			break
+		}
+
+		$name = $name.trim('')
+		$name = $name.trim(' ')
+		$name = $name | where{$_ -ne ""}
+		$split_name00 = $name -split "_"
+		$split_name01 = $old_name -split "\W"
+		$y00 = $split_name00.count
+		$y01 = $split_name01.count
+		$y00 = $y00-1
+		$y01 = $y01-1
+		
 		echo "No live streamer found, researching..."
 		echo "Initiated split searching"
 		research
-		}
+	
 	}
+	
+	if ($old_name -like "*twitch*") {validation
+	$amount = "pass"}
+	if ($old_name -like "*live*") {validation
+	$amount = "pass"}
+	if ($old_name -like "*ttv*") {validation
+	$amount = "pass"}
+	if ($old_name -like "*tv*") {validation
+	$amount = "pass"}
+	if ($old_name -like "*tiktok*") {validation
+	$amount = "pass"}
+	if ($old_name -like "*yt*") {validation
+	$amount = "pass"}
+	if ($old_name -like "*youtube*") {validation
+	$amount = "pass"}
 		
 	$name = $old_name # Last resort
 	streamsearch
@@ -298,7 +308,9 @@ __*Stream Information*__
 }
 
 function research { # Increase search accuracy
-	$ignore = @('in',
+	
+	$ignore = @('',
+				'in',
 				'on',
 				'twitch',
 				'ttv',
@@ -309,7 +321,6 @@ function research { # Increase search accuracy
 				'as',
 				'at',
 				'_',
-				'',
 				' ',
 				'of',
 				'RL',
@@ -322,17 +333,33 @@ function research { # Increase search accuracy
 				'tiktok',
 				'youtube')
 
-	for ($x = 0;$x -le $y;$x++) {
+	for ($x = 0;$x -le $y00;$x++) { # Method 1
 		$rcount = $x+1
 		echo "--------------O"
 		echo "Split search instance #$rcount"
-		$name = $split_name -split "_" | select -index $x
+		echo "Method 1"
+		$name = $split_name00 -split "_" | select -index $x
 		if ($ignore -eq $name) {
 			echo "Unnecassary string to search"
 			echo "Skipping ""$name"""
 			continue
 		}
 		write-host "Researching ""$name""" -foregroundcolor yellow
+		streamsearch
+	}
+	
+	for ($x = 0;$x -le $y01;$x++) { # Method 2
+		$rcount = $x+1
+		echo "--------------O"
+		echo "Split search instance #$rcount"
+		echo "Method 2"
+		$old_name = $split_name01 -split "\W" | select -index $x
+		if ($ignore -eq $old_name) {
+			echo "Unnecassary string to search"
+			echo "Skipping ""$old_name"""
+			continue
+		}
+		write-host "Researching ""$old_name""" -foregroundcolor yellow
 		streamsearch
 	}
 }
