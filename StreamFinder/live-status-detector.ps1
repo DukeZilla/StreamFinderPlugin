@@ -144,7 +144,13 @@ function nameloop {
 		if ($amount -eq "pass") {
 			break
 		}
-
+		
+		if ($name -match "twitch") { # Split "twitch" from player name
+			$name = $name -split "twitch"
+			echo 'twitch name split'
+		}
+		
+		$global:amount = "pass"
 		$name = $name.trim('')
 		$name = $name.trim(' ')
 		$name = $name | where{$_ -ne ""}
@@ -161,20 +167,13 @@ function nameloop {
 	
 	}
 	
-	if ($old_name -like "*twitch*") {validation
-	$amount = "pass"}
-	if ($old_name -like "*live*") {validation
-	$amount = "pass"}
-	if ($old_name -like "*ttv*") {validation
-	$amount = "pass"}
-	if ($old_name -like "*tv*") {validation
-	$amount = "pass"}
-	if ($old_name -like "*tiktok*") {validation
-	$amount = "pass"}
-	if ($old_name -like "*yt*") {validation
-	$amount = "pass"}
-	if ($old_name -like "*youtube*") {validation
-	$amount = "pass"}
+	if ($old_name -like "*twitch*") {validation}
+	if ($old_name -like "*live*") {validation}
+	if ($old_name -like "*ttv*") {validation}
+	if ($old_name -like "*tv*") {validation}
+	if ($old_name -like "*tiktok*") {validation}
+	if ($old_name -like "*yt*") {validation}
+	if ($old_name -like "*youtube*") {validation}
 		
 	$name = $old_name # Last resort
 	streamsearch
@@ -219,9 +218,13 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
 	$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 	$trim00 = $split00 | out-string
-	$time00 = $started_at | select -expandproperty started_at # Receiving initial time stamp
+	$power_version = $PSVersionTable.PSVersion | select -expandproperty Major
+	if ($power_version -eq "7") {
+		Psv7
+	} else {
+		Psv5
+	}
 	echo "Stream started at $time00"
-	$time01 = [DateTime]::UtcNow | get-date -Format "MM/dd/yyyy HH:mm:ss" # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
 	echo "Current UTC time: $time01"
 	$tsum = [datetime]$time01 -[datetime]$time00 # Time sum
 	$t0 = $tsum | select -expandproperty hours # Isolating outputs
@@ -332,6 +335,7 @@ function research { # Increase search accuracy
 				'yt',
 				'tiktok',
 				'youtube')
+				
 
 	for ($x = 0;$x -le $y01;$x++) { # Method 1
 		$rcount = $x+1
@@ -398,6 +402,19 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	echo "$old_name" >> Session-Blacklist.txt
 	write-host "$old_name was added to the session blacklist"
 	}
+}
+
+function PSv5 { # Timestamp function for powershell version 5 and below
+	$global:time_start = $started_at | select -expandproperty started_at # Receiving initial time stamp
+	$global:split_time00 = $time_start -split "[A-Z]" | select -index 0
+	$global:split_time01 = $time_start -split "[A-Z]" | select -index 1
+	$global:time00 = ($split_time00,$split_time01) -join " "
+	$global:time01 = [DateTime]::UtcNow | get-date -Format "yyyy-MM-dd HH:mm:ss" # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
+}
+
+function PSv7 { # Timestamp function for powershell version 7 and above
+	$global:time00 = $started_at | select -expandproperty started_at # Receiving initial time stamp
+	$global:time01 = [DateTime]::UtcNow | get-date -Format "MM/dd/yyyy HH:mm:ss" # Converting user's time to UTC time in order to correspond with Twitch's UTC time frame
 }
 
 nameloop
