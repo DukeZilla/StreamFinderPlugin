@@ -46,11 +46,49 @@ return $authHeadTwitch
 }
 
 iwr -method post -uri $twitchUri -UseBasicParsing
-$p = (pwd).path
 $i = -1
 
 # Discord webhook linke to variable
+$p = (pwd).path
 $discord_webhook = gc $p\discord-webhook.txt
+$test = gc $p\test-webhook.txt -erroraction silentlycontinue
+
+function Test_Webhook { # For testing the discord webhook
+$trim02 = get-date | out-string # Log file
+$date = $trim02.trim('')
+
+# v Discord Notification Message v
+$url = "$discord_webhook"
+$content00 = "**TEST NOTIFICATION**" 
+$content01 = "Title: This notification is a test to let you know that the discord webhook function is working."
+$content02 = "Date found: $date" 
+$content03 = "Timestamp: 9:23:01"
+$content04 = "Views: 73"
+$content05 = "VODs: N/A"
+$content06 = "Language: en"
+$content07 = "Come say hi! ---> https://www.twitch.tv"
+$payload = [PSCustomObject]@{ 
+content = "$content00
+-------------------------------------------------------O
+__*Stream Information*__
+- $content01
+- $content02
+- $content03
+- $content04
+- $content05
+- $content06
+-------------------------------------------------------O
+- $content07 " } 
+# ^ Discord Notification Message ^
+
+iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
+write-host "Test Complete!"
+del $p\test-webhook.txt
+exit
+}
+
+
+if ($test -eq "Test-Webhook") {Test_Webhook}
 
 function webhook_error {
 Add-Type -AssemblyName System.Windows.Forms
@@ -73,6 +111,7 @@ function nameloop {
 	$names = gc $p\names.txt
 	$botlist = gc $p\botlist.txt
 	$old_name = $names | select -index $i
+	$restore = $old_name
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
@@ -89,7 +128,7 @@ function nameloop {
 		$names > blacklist.txt
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
-		break
+		exit
 	}
 	
 	$name = $name.replace(" ", "_")
@@ -97,6 +136,11 @@ function nameloop {
 	if ($name -match "ttv") { # Split "ttv" from player name
 		$name = $name -split "ttv"
 		echo 'ttv name split'
+	}
+	
+	if ($name -match "t.tv") { # Split "ttv" from player name
+		$name = $name -split "t.tv"
+		echo 't.tv name split'
 	}
 
 		$name = $name -replace('-', '_')
@@ -108,7 +152,7 @@ function nameloop {
 		$names > blacklist.txt
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
-		break
+		exit
 	}
 	if ($perma_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer forever
 		echo "Player: $old_name is permanetaly blacklisted"
@@ -170,6 +214,7 @@ function nameloop {
 	if ($old_name -like "*tiktok*") {validation}
 	if ($old_name -like "*yt*") {validation}
 	if ($old_name -like "*youtube*") {validation}
+	if ($old_name -like "*t.tv*") {validation}
 		
 	$name = $old_name # Last resort
 	streamsearch
@@ -205,6 +250,7 @@ function streamsearch { # The stream finder itself
 $requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
 $live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
 if ($live_status -like "*True*") { # Discord Bot notification operations \ webhooks
+	$old_name = $restore
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	write-host "Live channel found! ===> $old_name" -foregroundcolor green
 	start sound.vbs
@@ -252,6 +298,7 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$user_id = (ConvertFrom-Json ($requestRAW01)).Data | select -expandproperty user_id
 	$requestRAW02 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/videos?user_id=$user_id"
 	$vod_check = (ConvertFrom-Json ($requestRAW02)).Data
+	
 	if ("" -eq $vod_check) {
 		$vod = "False"
 		$warning = "Hurry in!"
@@ -300,56 +347,66 @@ __*Stream Information*__
 	}
 }
 
+function ignore_function {
+	if ($string_i -eq '') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'in') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'on') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'twitch') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'ttv') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'tv') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'is') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'live') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'the') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'as') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'at') {$global:search_pass = "ignore"}
+	if ($string_i -eq '_') {$global:search_pass = "ignore"}
+	if ($string_i -eq ' ') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'of') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'RL') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'with') {$global:search_pass = "ignore"}
+	if ($string_i -eq '[a-z]') {$global:search_pass = "ignore"}
+	if ($string_i -eq '[0-9]') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'it') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'yt') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'tiktok') {$global:search_pass = "ignore"}
+	if ($string_i -eq 'youtube') {$global:search_pass = "ignore"}
+	if ($search_pass -eq "ignore") {echo "Search pass = ignore"} else {echo "Search pass = pass"}
+}
+
 function research { # Increase search accuracy
-	
-	$ignore = @('',
-				'in',
-				'on',
-				'twitch',
-				'ttv',
-				'is',
-				'live',
-				'tv',
-				'the',
-				'as',
-				'at',
-				'_',
-				' ',
-				'of',
-				'RL',
-				'with',
-				'[a-z]',
-				'[A-Z]',
-				'[0-9]',
-				'it',
-				'yt',
-				'tiktok',
-				'youtube')
 				
 	for ($x = 0;$x -le $y01;$x++) { # Method 1
 		$rcount = $x+1
-		echo "--------------O"
+		echo "-------------------O"
 		echo "Split search instance #$rcount"
 		echo "Method 1"
-		$old_name = $split_name01 -split "\W" | select -index $x
-		if ($ignore -eq $old_name) {
+		$test_old_name = $split_name01 -split "\W" | select -index $x
+		echo "Tested name: $test_old_name"
+		$global:string_i = $test_old_name
+		ignore_function
+		if ($search_pass -eq "ignore") {
 			echo "Unnecassary string to search"
-			echo "Skipping ""$old_name"""
+			write-host "Skipping ""$test_old_name""" -foregroundcolor white
+			$global:search_pass = "pass"
 			continue
 		}
-		write-host "Researching ""$old_name""" -foregroundcolor yellow
+		write-host "Researching ""$test_old_name""" -foregroundcolor yellow
 		streamsearch
 	}
 	
 	for ($x = 0;$x -le $y00;$x++) { # Method 2
 		$rcount = $x+1
-		echo "--------------O"
+		echo "-------------------O"
 		echo "Split search instance #$rcount"
 		echo "Method 2"
 		$name = $split_name00 -split "_" | select -index $x
-		if ($ignore -eq $name) {
+		echo "Tested name: $name"
+		$global:string_i = $name
+		ignore_function
+		if ($search_pass -eq "ignore") {
 			echo "Unnecassary string to search"
-			echo "Skipping ""$name"""
+			write-host "Skipping ""$test_old_name""" -foregroundcolor white
+			$global:search_pass = "pass"
 			continue
 		}
 		write-host "Researching ""$name""" -foregroundcolor yellow
