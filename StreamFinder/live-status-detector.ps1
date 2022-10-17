@@ -87,7 +87,6 @@ del $p\test-webhook.txt
 exit
 }
 
-
 if ($test -eq "Test-Webhook") {Test_Webhook}
 
 function webhook_error {
@@ -138,7 +137,7 @@ function nameloop {
 		echo 'ttv name split'
 	}
 	
-	if ($name -match "t.tv") { # Split "ttv" from player name
+	if ($name -match "t.tv") { # Split "t.tv" from player name
 		$name = $name -split "t.tv"
 		echo 't.tv name split'
 	}
@@ -260,8 +259,10 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
 	$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 	$trim00 = $split00 | out-string
+	
 	$power_version = $PSVersionTable.PSVersion | select -expandproperty Major
 	if ($power_version -eq "7") {Psv7} else {Psv5}
+	
 	echo "Stream started at $time00"
 	echo "Current UTC time: $time01"
 	$tsum = [datetime]$time01 -[datetime]$time00 # Time sum
@@ -275,14 +276,12 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 		$t0 = $t0 + 24
 		}
 	}
-	
 	$char0 = $t0 | measure -character | select -expandproperty characters
 	$char1 = $t1 | measure -character | select -expandproperty characters
 	$char2 = $t2 | measure -character | select -expandproperty characters
 	if ($char0 -eq 1 ) {$t0 = "0$t0"}
 	if ($char1 -eq 1 ) {$t1 = "0$t1"}
 	if ($char2 -eq 1 ) {$t2 = "0$t2"}
-	
 	$timestamp = "$t0`:$t1`:$t2"
 	echo "timestamp: $timestamp"
 	$twitch_username = $trim00.trim('')
@@ -347,7 +346,7 @@ __*Stream Information*__
 	}
 }
 
-function ignore_function {
+function ignore_string {
 	if ($string_i -eq '') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'in') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'on') {$global:search_pass = "ignore"}
@@ -383,7 +382,7 @@ function research { # Increase search accuracy
 		$test_old_name = $split_name01 -split "\W" | select -index $x
 		echo "Tested name: $test_old_name"
 		$global:string_i = $test_old_name
-		ignore_function
+		ignore_string
 		if ($search_pass -eq "ignore") {
 			echo "Unnecassary string to search"
 			write-host "Skipping ""$test_old_name""" -foregroundcolor white
@@ -402,7 +401,7 @@ function research { # Increase search accuracy
 		$name = $split_name00 -split "_" | select -index $x
 		echo "Tested name: $name"
 		$global:string_i = $name
-		ignore_function
+		ignore_string
 		if ($search_pass -eq "ignore") {
 			echo "Unnecassary string to search"
 			write-host "Skipping ""$test_old_name""" -foregroundcolor white
