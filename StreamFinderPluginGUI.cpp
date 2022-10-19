@@ -10,6 +10,7 @@
 using namespace std;
 
 // Plugin Settings Window code here
+static void StreamFinderGUI(bool* p_open);
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return "Stream Finder Plugin";
@@ -21,8 +22,9 @@ std::string StreamFinderPlugin::GetPluginName() {
 // static char str0[128] = "Insert link";
 
 void StreamFinderPlugin::RenderSettings() {
-    bool show_sf_window = false;
-    ImGui::TextUnformatted("PRE ALPHA Version 0.9.23 | This Plugin is still under development");
+    static bool show_sf_window = false;
+    if (show_sf_window)           StreamFinderGUI(&show_sf_window);
+    ImGui::TextUnformatted("PRE ALPHA Version 0.9.30 | This Plugin is still under development");
 
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 
@@ -40,22 +42,15 @@ void StreamFinderPlugin::RenderSettings() {
 		ImGui::SetTooltip("Toggle Stream Finder Plugin");
 	}
 
-    if (ImGui::Button("Open Setting Manager")) {
-       
+    if (ImGui::Button("Open Stream Finder GUI")) {
+        show_sf_window = true;
+        if (!show_sf_window) {
+            StreamFinderGUI(&show_sf_window);
+        }
     }
 
     if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("Stream Finder Settings Manager");
-    }
-
-    ImGui::TextUnformatted("------------------------------------------------------O");
-
-    if (ImGui::Button("Open Stream Finder Folder")) {
-        system("C:\\Windows\\Temp\\directory.vbs");
-    }
-
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Opens the Stream Finder directory folder");
     }
      
     ImGui::TextUnformatted("------------------------------------------------------O");
@@ -66,7 +61,7 @@ void StreamFinderPlugin::RenderSettings() {
         ImGui::Separator();
         ImGui::Text("DISCORD WEBHOOK:");
         ImGui::BulletText("- How to set up the discord webhook -");
-        ImGui::BulletText("1.) Open Discord and head to your personal server");
+        ImGui::BulletText("1.) Open Discord and head to your personal server, if you don't have one, start your own server.");
         ImGui::BulletText("2.) Right click on the channel you wish to receive stream notifications with and click \"Edit Channel\"");
         ImGui::BulletText("3.) Click \"Intergrations\" and then click \"Create Webhook Once you have created your webhook,\n"
             "copy the webhook URL and paste it in the text box");
@@ -92,22 +87,24 @@ void StreamFinderPlugin::RenderSettings() {
     ImGui::TextUnformatted("Plugin made by P as in Papi | Special thanks to the bakkesmod programming community for help!");
 }
 
-void StreamFinderPlugin::GuiWindow() 
+void StreamFinderPlugin::StreamFinderGUI(bool* p_open)
 {
-    ImGui::SetNextWindowSizeConstraints(ImVec2(500, 500), ImVec2(FLT_MAX, FLT_MAX));
-    if (ImGui::Begin("###Stream Finder Plugin", &isWindowOpen)) {
-        if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
-            renderWebhookTab();
-            renderBlacklistsTab();
-            renderLiveLogTab();
-            ImGui::EndTabBar();
-        }
-    }
-    ImGui::End();
+ ImGui::SetNextWindowSizeConstraints(ImVec2(500, 500), ImVec2(FLT_MAX, FLT_MAX));
+     if (ImGui::Begin("Stream Finder Plugin", p_open)) {
+         if (ImGui::BeginTabBar("Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
+             ImGui::TextUnformatted("Stream Finder Settings");
+             renderWebhookTab();
+             renderBlacklistsTab();
+             renderLiveLogTab();
+             ImGui::EndTabBar();
+         }
+     }
+     ImGui::End();
 }
 
 void StreamFinderPlugin::renderWebhookTab() {
     char buf[50];
+    ImGui::Separator();
     ImGui::TextUnformatted("DISCORD WEBHOOK LINK");
     ImGui::Separator();
     ImGui::TextUnformatted("To receive notifications, create a webhook and paste it here:");
@@ -116,24 +113,57 @@ void StreamFinderPlugin::renderWebhookTab() {
 
     }
     if (ImGui::Button("Test Webhook")) {
-    
+        std::ofstream test(gameWrapper->GetDataFolder() / "StreamFinder" / "test-webhook.txt");
+        test << "Test-Webhook" << std::endl;
+        test.close();
+        STARTUPINFO startupInfo;
+        PROCESS_INFORMATION pi;
+        memset(&startupInfo, 0, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = false;
+        // Get path for each computer, non-user specific and non-roaming data.
+        // Append product-specific path
+        TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\stream-finder.vbs""");
+        CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        cvarManager->log("Stream Detector Test Launched.");
+        // This solution is used to prevent the program from kicking the player out of the Rocket League window.
     }
 }
 
 void StreamFinderPlugin::renderBlacklistsTab() {
+    ImGui::Separator();
     ImGui::TextUnformatted("BLACKLISTS");
     ImGui::Separator();
-    if (ImGui::CollapsingHeader("Permanent Blacklist")) {}
-    if (ImGui::CollapsingHeader("Temporary Blacklist")) {}
-    if (ImGui::CollapsingHeader("Session Blacklist")) {}
+    if (ImGui::CollapsingHeader("Permanent Blacklist")) {
+        ImGui::TextUnformatted("Enter names you wish to be permanetly blacklisted here.");
+        ImGui::Separator();
+    }
+    if (ImGui::CollapsingHeader("Temporary Blacklist")) {
+        ImGui::TextUnformatted("These names are blacklisted for 1 game.");
+        ImGui::Separator();
+    }
+    if (ImGui::CollapsingHeader("Session Blacklist")) {
+        ImGui::TextUnformatted("These names are blacklisted until the day is over.");
+        ImGui::Separator();
+    }
     if (ImGui::Button("Clear all temporary blacklists")) {
 
     }
 }
 
 void StreamFinderPlugin::renderLiveLogTab() {
-    ImGui::TextUnformatted("LOGGING");
     ImGui::Separator();
+    ImGui::TextUnformatted("EXTRAS");
+    ImGui::Separator();
+    if (ImGui::Button("Open Stream Finder Folder")) {
+        system("C:\\Windows\\Temp\\directory.vbs");
+    }
+
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Opens the Stream Finder directory folder");
+    }
 }
 
 // Do ImGui rendering here
