@@ -53,6 +53,19 @@ $p = (pwd).path
 $discord_webhook = gc $p\discord-webhook.txt
 $test = gc $p\test-webhook.txt -erroraction silentlycontinue
 
+function test_notif {
+Add-Type -AssemblyName System.Windows.Forms
+$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+$path = (Get-Process -id $pid).Path
+$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+$balmsg.BalloonTipText = 'Test notification sent.'
+$balmsg.BalloonTipTitle = "Stream Finder Plugin"
+$balmsg.Visible = $true
+$balmsg.ShowBalloonTip(60000)
+}
+
+
 function Test_Webhook { # For testing the discord webhook
 $trim02 = get-date | out-string # Log file
 $date = $trim02.trim('')
@@ -82,6 +95,8 @@ __*Stream Information*__
 # ^ Discord Notification Message ^
 
 iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
+test_notif
+start $p\sound.vbs
 write-host "Test Complete!"
 del $p\test-webhook.txt
 exit
@@ -210,10 +225,10 @@ function nameloop {
 	if ($old_name -like "*live*") {validation}
 	if ($old_name -like "*ttv*") {validation}
 	if ($old_name -like "*tv*") {validation}
+	if ($old_name -like "*t.tv*") {validation}
 	if ($old_name -like "*tiktok*") {validation}
 	if ($old_name -like "*yt*") {validation}
 	if ($old_name -like "*youtube*") {validation}
-	if ($old_name -like "*t.tv*") {validation}
 		
 	$name = $old_name # Last resort
 	streamsearch
