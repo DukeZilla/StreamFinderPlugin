@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder Debug Log"
+echo "Stream Finder | Detector Version 1.33"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -129,13 +129,13 @@ function nameloop {
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
-	$name = $names | select -index $i
+	$global:name = $names | select -index $i
 	
 	echo "----------------------------------------------------------0"
 	echo "Instance #$i"
 	
 	# Null Value Check / Breaker
-	$null_check = $name
+	$null_check = $global:name
     if ($null -eq $null_check) { # at the end of the list the loop will break
 		echo "Search halted, reason: null value break"
 		echo "Reached the end of name list."
@@ -145,7 +145,7 @@ function nameloop {
 		exit
 	}
 	
-	$name = $name.replace(" ", "_")
+	$global:name = $global:name.replace(" ", "_")
 	
 	if ($name -match "ttv") { # Split "ttv" from player name
 		$name = $name -split "ttv"
@@ -190,6 +190,7 @@ function nameloop {
 	$key00 = "null"
 	SessionBlacklist
 	
+	$global:strmsrch = $name
 	streamsearch
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -221,6 +222,7 @@ function nameloop {
 	
 	}
 	
+	if ($old_name -like "*twitch.tv*") {validation}
 	if ($old_name -like "*twitch*") {validation}
 	if ($old_name -like "*live*") {validation}
 	if ($old_name -like "*ttv*") {validation}
@@ -261,7 +263,8 @@ function nameloop {
 }
 
 function streamsearch { # The stream finder itself
-$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$name
+echo "Streamsearch function on $strmsrch"
+$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$strmsrch
 $live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
 if ($live_status -like "*True*") { # Discord Bot notification operations \ webhooks
 	$old_name = $restore
@@ -405,6 +408,7 @@ function research { # Increase search accuracy
 			continue
 		}
 		write-host "Researching ""$test_old_name""" -foregroundcolor yellow
+		$global:strmsrch = $test_old_name
 		streamsearch
 	}
 	
@@ -424,6 +428,7 @@ function research { # Increase search accuracy
 			continue
 		}
 		write-host "Researching ""$name""" -foregroundcolor yellow
+		$global:strmsrch = $name
 		streamsearch
 	}
 }
