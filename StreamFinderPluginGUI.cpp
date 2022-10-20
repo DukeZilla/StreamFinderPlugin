@@ -199,7 +199,7 @@ void StreamFinderPlugin::renderWebhookTab() {
             cvarManager->log("Stream Detector Test Launched.");
             // This solution is used to prevent the program from kicking the player out of the Rocket League window.
         }
-        ImGui::EndTabItem;
+        ImGui::EndTabItem();
     }
 }
 
@@ -241,7 +241,7 @@ void StreamFinderPlugin::renderBlacklistsTab() {
         if (ImGui::Button("Clear all temporary blacklists")) {
 
         }
-        ImGui::EndTabItem;
+        ImGui::EndTabItem();
     }
 }
 
@@ -259,7 +259,7 @@ void StreamFinderPlugin::renderExtrasTab() {
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Opens the Stream Finder directory folder");
         }
-        ImGui::EndTabItem;
+        ImGui::EndTabItem();
     }
 }
 
