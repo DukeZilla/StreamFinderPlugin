@@ -233,7 +233,7 @@ void StreamFinderPlugin::renderBlacklistsTab() {
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer02, _countof(buffer02));
             if (ImGui::Button("Save")) {
-                std::ofstream sessionchange(gameWrapper->GetDataFolder() / "StreamFinder" / "blacklist.txt");
+                std::ofstream sessionchange(gameWrapper->GetDataFolder() / "StreamFinder" / "session-blacklist.txt");
                 sessionchange << std::string(buffer02) << endl;
                 sessionchange.close();
             }
