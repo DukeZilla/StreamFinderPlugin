@@ -13,9 +13,8 @@ using namespace std;
 static void StreamFinderGUI(bool* p_open);
 static char bufferBoi[1024]; // For the discord webhook
 static char buffer00[1024]; // For the Permanent blacklist
-static char buffer01[1024]; // For the Temporary blacklist
-static char buffer02[1024]; // For the Session blacklist`
-static char buffer03[1024]; // For the log file
+static char buffer01[1024]; // For the Lobby list
+//static char buffer02[1024]; // For the log file
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return "Stream Finder Plugin";
@@ -33,7 +32,7 @@ std::string StreamFinderPlugin::GetPluginName() {
 void StreamFinderPlugin::RenderSettings() {
     static bool show_sf_window = false; // Bool to toggle the window
     if (show_sf_window)           StreamFinderGUI(&show_sf_window);
-    ImGui::TextUnformatted("PRE ALPHA Version 0.93 | This Plugin is still under development");
+    ImGui::TextUnformatted("PRE ALPHA Version 0.94 | This Plugin is still under development");
 
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 
@@ -53,10 +52,9 @@ void StreamFinderPlugin::RenderSettings() {
 
     if (ImGui::Button("Open Stream Finder GUI")) {
         discbufferfunc();
+        //logbufferfunc();
         permabufferfunc();
         tempbufferfunc();
-        sessionbufferfunc();
-        logbufferfunc();
         show_sf_window = true;
         if (!show_sf_window) {
             StreamFinderGUI(&show_sf_window);
@@ -143,7 +141,7 @@ void StreamFinderPlugin::tempbufferfunc()
 {
     std::string line01;
     std::string tempstring;
-    std::ifstream temp(gameWrapper->GetDataFolder() / "StreamFinder" / "blacklist.txt");
+    std::ifstream temp(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
     while (getline(temp, line01))
     {
         if (line01.empty()) {
@@ -157,41 +155,26 @@ void StreamFinderPlugin::tempbufferfunc()
     temp.close();
 }
 
-void StreamFinderPlugin::sessionbufferfunc()
-{
-    std::string line02;
-    std::string sessionstring;
-    std::ifstream sessions(gameWrapper->GetDataFolder() / "StreamFinder" / "session-blacklist.txt");
-    while (getline(sessions, line02))
-    {
-        if (line02.empty()) {
-            break;
-        }
-        sessionstring += line02 + '\n';
-    }
-    // do outside of render func
-    memset(&buffer02, 0, _countof(buffer02)); // init char array
-    strncpy_s(buffer02, sessionstring.c_str(), _countof(buffer02)); // print text to the array/buffer
-    sessions.close();
-}
-
-void StreamFinderPlugin::logbufferfunc()
-{
-    std::string line03;
-    std::string logstring;
-    std::ifstream log(gameWrapper->GetDataFolder() / "StreamFinder" / "livestreamlog.txt");
-    while (getline(log, line03))
-    {
-        if (line03.empty()) {
-            break;
-        }
-        logstring += line03 + '\n';
-    }
-    // do outside of render func
-    memset(&buffer03, 0, _countof(buffer03)); // init char array
-    strncpy_s(buffer03, logstring.c_str(), _countof(buffer03)); // print text to the array/buffer
-    log.close();
-}
+//void StreamFinderPlugin::logbufferfunc()
+//{
+//    std::string line02;
+//    std::string logstring;
+//    std::ifstream logstrm(gameWrapper->GetDataFolder() / "StreamFinder" / "livestreamlog.txt");
+//    while (getline(logstrm, line02))
+//    {
+//        if (line02.empty()) {
+//            break;
+//        }
+//        logstring += line02 + '\n';
+//    }
+//    // do outside of render func
+//    memset(&buffer02, 0, _countof(buffer02)); // init char array
+//    strncpy_s(buffer02, logstring.c_str(), _countof(buffer02)); // print text to the array/buffer
+//    logstrm.close();
+//    std::ofstream testing(gameWrapper->GetDataFolder() / "StreamFinder" / "test.txt");
+//    testing << std::string(buffer02) << endl;
+//    testing.close();
+//}
 
 /// <summary>
 /// Rendered Tabs
@@ -238,8 +221,8 @@ void StreamFinderPlugin::renderWebhookTab() {
             ImGui::BulletText("- How to set up the discord webhook -");
             ImGui::BulletText("1.) Open Discord and head to your personal server, if you don't have one, start your own server.");
             ImGui::BulletText("2.) Right click on the channel you wish to receive stream notifications with and click \"Edit Channel\"");
-            ImGui::BulletText("3.) Click \"Intergrations\" and then click \"Create Webhook Once you have created your webhook,\n"
-                "copy the webhook URL and paste it in the text box");
+            ImGui::BulletText("3.) Click \"Intergrations\" and then click \"Create Webhook\" Once you have created your webhook,\n"
+                "copy the webhook URL and paste it in the text box above.");
             ImGui::BulletText("More info can be found on the discord support site.");
             ImGui::Separator();
         }
@@ -248,15 +231,14 @@ void StreamFinderPlugin::renderWebhookTab() {
 }
 
 void StreamFinderPlugin::renderBlacklistsTab() {
-    if (ImGui::BeginTabItem("Blacklists")) {
+    if (ImGui::BeginTabItem("Blacklist")) {
         ImGui::Separator();
-        ImGui::TextUnformatted("BLACKLISTS");
+        ImGui::TextUnformatted("BLACKLIST");
         ImGui::Separator();
-        if (ImGui::CollapsingHeader("Permanent Blacklist")) {
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Permanent Blacklist"), 1);
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Temporary Blacklist"), 0);
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Session Blacklist"), 0);
-            ImGui::TextUnformatted("Enter names you wish to be permanetly blacklisted here.");
+        if (ImGui::CollapsingHeader("Blacklist")) {
+            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 0);
+            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 1);
+            ImGui::TextUnformatted("Enter names of players you wish to be permanently blacklisted here.");
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer00, _countof(buffer00));
             if (ImGui::Button("Save")) {
@@ -265,34 +247,12 @@ void StreamFinderPlugin::renderBlacklistsTab() {
                 permachange.close();
             }
         }
-        if (ImGui::CollapsingHeader("Temporary Blacklist")) {
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Permanent Blacklist"), 0);
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Temporary Blacklist"), 1);
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Session Blacklist"), 0);
-            ImGui::TextUnformatted("These names are blacklisted for 1 game.");
+        if (ImGui::CollapsingHeader("Current Lobby")) {
+            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 0);
+            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 1);
+            ImGui::TextUnformatted("Names of players in you've played with will appear here.");
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer01, _countof(buffer01));
-            if (ImGui::Button("Save")) {
-                std::ofstream tempchange(gameWrapper->GetDataFolder() / "StreamFinder" / "blacklist.txt");
-                tempchange << std::string(buffer01) << endl;
-                tempchange.close();
-            }
-        }
-        if (ImGui::CollapsingHeader("Session Blacklist")) {
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Permanent Blacklist"), 0);
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Temporary Blacklist"), 0);
-            ImGui::GetStateStorage()->SetInt(ImGui::GetID("Session Blacklist"), 1);
-            ImGui::TextUnformatted("These names are blacklisted until the day is over.");
-            ImGui::Separator();
-            ImGui::InputTextMultiline("###List", buffer02, _countof(buffer02));
-            if (ImGui::Button("Save")) {
-                std::ofstream sessionchange(gameWrapper->GetDataFolder() / "StreamFinder" / "session-blacklist.txt");
-                sessionchange << std::string(buffer02) << endl;
-                sessionchange.close();
-            }
-        }
-        if (ImGui::Button("Clear all temporary blacklists")) {
-
         }
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Help"))
@@ -301,11 +261,8 @@ void StreamFinderPlugin::renderBlacklistsTab() {
             ImGui::Separator();
             ImGui::Text("BLACKLIST INFO:");
             ImGui::BulletText("- Information on blacklists -");
-            ImGui::BulletText("Temporary Blacklist: This will blacklist a player for 1 game to prevent notification spam.");
-            ImGui::BulletText("Session Blacklist: If a streamer is found, they will be blacklisted for the entire day.\n"
-                "The session blacklist will expire after the day is over. (Another spam prevention)");
             ImGui::BulletText("Permanent Blacklist: Whatever names are included in this list will be completely ignored by the program indefinitely,.");
-            ImGui::BulletText("Bot list: All bot names have been blacklisted by default to prevent false positives.");
+            ImGui::BulletText("Side note: All bot names have been blacklisted by default to prevent false positives.");
             ImGui::Separator();
         }
         ImGui::EndTabItem();
@@ -313,12 +270,13 @@ void StreamFinderPlugin::renderBlacklistsTab() {
 }
 
 void StreamFinderPlugin::renderExtrasTab() {
-    if (ImGui::BeginTabItem("Extras")) {
+    if (ImGui::BeginTabItem("Misc")) {
         ImGui::Separator();
-        ImGui::TextUnformatted("EXTRAS");
+        ImGui::TextUnformatted("MISC");
         ImGui::Separator();
-        ImGui::TextUnformatted("Live Stream Log File");
-        ImGui::InputTextMultiline("###List", buffer03, _countof(buffer03));
+        //ImGui::TextUnformatted("LIVE STREAM LOG:");
+        //ImGui::TextUnformatted("Streamers who were found will be logged here.");
+        //ImGui::InputTextMultiline("###Log", buffer02, _countof(buffer02));
         ImGui::Separator();
         if (ImGui::Button("Open Stream Finder Folder")) {
             system("C:\\Windows\\Temp\\directory.vbs");
@@ -330,14 +288,13 @@ void StreamFinderPlugin::renderExtrasTab() {
         if (ImGui::CollapsingHeader("Help")) {
             ImGui::Text("STREAM FINDER 101");
             ImGui::Separator();
-            ImGui::Text("EXTRAS:");
+            ImGui::Text("MISC:");
             ImGui::BulletText("The program will also log all the stream finding events in a text file: \"livestreamlog.txt\"");
             ImGui::BulletText("If you ever want to see the stream finder folder you can click the button above."); \
             ImGui::BulletText("If there are any bugs please sumbit a ticket on the stream finder github page!");
             //ImGui::BulletText("You may also modify the sound effect, be sure the sound file name is modified in \"sound.vbs\"");
             ImGui::Separator();
         }
-
         ImGui::EndTabItem();
     }
 }
