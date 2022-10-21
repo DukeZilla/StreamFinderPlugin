@@ -88,20 +88,79 @@ void StreamFinderPlugin::StreamFinderGUI(bool* p_open)
      ImGui::End();
 }
 
-void StreamFinderPlugin::SaveNotif()
+/// <summary>
+/// Buttons
+/// </summary>
+
+void StreamFinderPlugin::DiscSaveNotif()
 {
-    ImGui::Begin("Stream Finder Plugin");
-    ImGui::BeginChild("test", ImVec2(100, 100));
-    if (ImGui::BeginPopupContextWindow())
+    if (ImGui::Button("Save Changes", ImVec2(0, 0))) {
+        std::ofstream webhookchange(gameWrapper->GetDataFolder() / "StreamFinder" / "discord-webhook.txt");
+        webhookchange << std::string(bufferBoi) << endl;
+        webhookchange.close();
+        ImGui::OpenPopup("Discord Webhook");
+    }
+
+    if (ImGui::BeginPopupModal("Discord Webhook", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::TextUnformatted("Changes Saved!");
-        if (ImGui::Selectable("Okay."))
-        {
+        ImGui::TextUnformatted("Webhook saved!");
+        if (ImGui::Button("Okay.", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
     }
-    ImGui::EndChild();
-    ImGui::End();
+}
+
+void StreamFinderPlugin::ListSaveNotif()
+{
+    if (ImGui::Button("Save Changes", ImVec2(0, 0))) {
+        std::ofstream permachange(gameWrapper->GetDataFolder() / "StreamFinder" / "permanent-blacklist.txt");
+        permachange << std::string(buffer00) << endl;
+        permachange.close();
+        ImGui::OpenPopup("Blacklist");
+    }
+
+    if (ImGui::BeginPopupModal("Blacklist", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextUnformatted("Changes has been saved!");
+        if (ImGui::Button("Okay.", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
+void StreamFinderPlugin::HookTestNotif()
+{
+    if (ImGui::Button("Test Webhook", ImVec2(0, 0))) {
+        std::ofstream test(gameWrapper->GetDataFolder() / "StreamFinder" / "test-webhook.txt");
+        test << "Test-Webhook" << std::endl;
+        test.close();
+        STARTUPINFO startupInfo;
+        PROCESS_INFORMATION pi;
+        memset(&startupInfo, 0, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = false;
+        // Get path for each computer, non-user specific and non-roaming data.
+        // Append product-specific path
+        TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\stream-finder.vbs""");
+        CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        cvarManager->log("Stream Detector Test Launched.");
+        HookTestNotif();
+        // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+        ImGui::OpenPopup("Webhook Test");
+    }
+
+    if (ImGui::BeginPopupModal("Webhook Test", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextUnformatted("Webhook test initiated!");
+        if (ImGui::Button("Okay.", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
 }
 
 /// <summary>
@@ -187,31 +246,9 @@ void StreamFinderPlugin::renderWebhookTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("To receive discord notifications, create a channel webhook and paste it here:");
         ImGui::InputText("###Link", bufferBoi, _countof(bufferBoi));
-
-        if (ImGui::Button("Save")) {
-            std::ofstream webhookchange(gameWrapper->GetDataFolder() / "StreamFinder" / "discord-webhook.txt");
-            webhookchange << std::string(bufferBoi) << endl;
-            webhookchange.close();
-        }
+        DiscSaveNotif();
         ImGui::SameLine();
-        if (ImGui::Button("Test Webhook")) {
-            std::ofstream test(gameWrapper->GetDataFolder() / "StreamFinder" / "test-webhook.txt");
-            test << "Test-Webhook" << std::endl;
-            test.close();
-            STARTUPINFO startupInfo;
-            PROCESS_INFORMATION pi;
-            memset(&startupInfo, 0, sizeof(STARTUPINFO));
-            startupInfo.cb = sizeof(STARTUPINFO);
-            startupInfo.wShowWindow = false;
-            // Get path for each computer, non-user specific and non-roaming data.
-            // Append product-specific path
-            TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\stream-finder.vbs""");
-            CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            cvarManager->log("Stream Detector Test Launched.");
-            // This solution is used to prevent the program from kicking the player out of the Rocket League window.
-        }
+        HookTestNotif();
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Help"))
         {
@@ -235,22 +272,18 @@ void StreamFinderPlugin::renderBlacklistsTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("BLACKLIST");
         ImGui::Separator();
-        if (ImGui::CollapsingHeader("Blacklist")) {
+        if (ImGui::CollapsingHeader("Blacklist", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 0);
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 1);
             ImGui::TextUnformatted("Enter names of players you wish to be permanently blacklisted here.");
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer00, _countof(buffer00));
-            if (ImGui::Button("Save")) {
-                std::ofstream permachange(gameWrapper->GetDataFolder() / "StreamFinder" / "permanent-blacklist.txt");
-                permachange << std::string(buffer00) << endl;
-                permachange.close();
-            }
+            ListSaveNotif();
         }
         if (ImGui::CollapsingHeader("Current Lobby")) {
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 0);
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 1);
-            ImGui::TextUnformatted("Names of players in you've played with will appear here.");
+            ImGui::TextUnformatted("Players in your current lobby will appear here.");
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer01, _countof(buffer01));
         }
