@@ -10,14 +10,14 @@
 using namespace std;
 
 // Plugin Settings Window code here
-static void StreamFinderGUI(bool* p_open);
+static void StreamFinderGUI();
 static char bufferBoi[1024]; // For the discord webhook
 static char buffer00[1024]; // For the Permanent blacklist
 static char buffer01[1024]; // For the Lobby list
 //static char buffer02[1024]; // For the log file
 
 std::string StreamFinderPlugin::GetPluginName() {
-	return "Stream Finder Plugin";
+	return pluginNiceName_;
 }
 
 // Render the plugin settings here
@@ -30,8 +30,6 @@ std::string StreamFinderPlugin::GetPluginName() {
 ////////////////////////
 
 void StreamFinderPlugin::RenderSettings() {
-    static bool show_sf_window = false; // Bool to toggle the window
-    if (show_sf_window)           StreamFinderGUI(&show_sf_window);
     ImGui::TextUnformatted("PRE ALPHA Version 0.94 | This Plugin is still under development");
 
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
@@ -55,10 +53,10 @@ void StreamFinderPlugin::RenderSettings() {
         //logbufferfunc();
         permabufferfunc();
         tempbufferfunc();
-        show_sf_window = true;
-        if (!show_sf_window) {
-            StreamFinderGUI(&show_sf_window);
-        }
+        gameWrapper->Execute([this](GameWrapper* gw) {
+            cvarManager->executeCommand("togglemenu " + menuTitle_);
+            });
+       
     }
 
     if (ImGui::IsItemHovered()) {
@@ -66,6 +64,22 @@ void StreamFinderPlugin::RenderSettings() {
     }
      
     ImGui::TextUnformatted("------------------------------------------------------O");
+
+    static char keybindBuf[64] = "F7";
+    if (ImGui::Button("Set Keybind")) {
+        discbufferfunc();
+        //logbufferfunc();
+        permabufferfunc();
+        tempbufferfunc();
+        cvarManager->setBind(keybindBuf, "togglemenu " + menuTitle_);
+    }
+    ImGui::SameLine();
+    ImGui::PushItemWidth(60);
+    ImGui::InputText("##keybind", keybindBuf, IM_ARRAYSIZE(keybindBuf));
+    ImGui::PopItemWidth();
+
+    ImGui::TextUnformatted("------------------------------------------------------O");
+
     ImGui::TextUnformatted("Plugin made by P as in Papi | Special thanks to the bakkesmod programming community for help!");
 }
 
@@ -73,19 +87,8 @@ void StreamFinderPlugin::RenderSettings() {
 /// Toggled Window
 /// </summary>
 
-void StreamFinderPlugin::StreamFinderGUI(bool* p_open)
+void StreamFinderPlugin::StreamFinderGUI()
 {
- ImGui::SetNextWindowSizeConstraints(ImVec2(700, 500), ImVec2(FLT_MAX, FLT_MAX));
-     if (ImGui::Begin("Stream Finder Plugin Version 0.93", p_open)) {
-         if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
-             ImGui::TextUnformatted("Stream Finder Settings");
-             renderWebhookTab();
-             renderBlacklistsTab();
-             renderExtrasTab();
-             ImGui::EndTabBar();
-         }
-     }
-     ImGui::End();
 }
 
 /// <summary>
@@ -336,37 +339,35 @@ void StreamFinderPlugin::renderExtrasTab() {
 
 void StreamFinderPlugin::Render()
 {
-    if (!this->isWindowOpen) {
-        cvarManager->executeCommand("togglemenu " + GetMenuName());
-
-        return;
-    }
-
-	if (!ImGui::Begin(menuTitle_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None))
-	{
-		// Early out if the window is collapsed, as an optimization.
-		ImGui::End();
-		return;
+    ImGui::SetNextWindowSizeConstraints(ImVec2(700, 500), ImVec2(FLT_MAX, FLT_MAX));
+	if (ImGui::Begin(pluginNiceName_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None)) {
+        if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
+            ImGui::TextUnformatted("Stream Finder Settings");
+            renderWebhookTab();
+            renderBlacklistsTab();
+            renderExtrasTab();
+            ImGui::EndTabBar();
+        }
 	}
 
 	ImGui::End();
 
 	if (!isWindowOpen_)
 	{
-		cvarManager->executeCommand("togglemenu " + GetMenuName());
+		cvarManager->executeCommand("togglemenu " + menuTitle_);
 	}
 }
 
 // Name of the menu that is used to toggle the window.
 std::string StreamFinderPlugin::GetMenuName()
 {
-	return "StreamFinderPlugin";
+    return menuTitle_;
 }
 
 // Title to give the menu
 std::string StreamFinderPlugin::GetMenuTitle()
 {
-	return menuTitle_;
+    return pluginNiceName_;
 }
 
 // Don't call this yourself, BM will call this function with a pointer to the current ImGui context
