@@ -73,7 +73,9 @@ private:
 	void permabufferfunc();
 	void tempbufferfunc();
 	//void logbufferfunc();
-	void SaveNotif();
+	void DiscSaveNotif();
+	void ListSaveNotif();
+	void HookTestNotif();
 	void Log(std::string msg);
 	bool isWindowOpen = false;
 	bool shouldBlockInput = false;
