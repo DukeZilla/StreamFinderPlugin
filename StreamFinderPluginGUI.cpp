@@ -30,7 +30,7 @@ std::string StreamFinderPlugin::GetPluginName() {
 ////////////////////////
 
 void StreamFinderPlugin::RenderSettings() {
-    ImGui::TextUnformatted("PRE ALPHA Version 0.94 | This Plugin is still under development");
+    ImGui::TextUnformatted("PRE ALPHA Version 0.95 | This Plugin is still under development");
 
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 
