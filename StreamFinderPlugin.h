@@ -28,7 +28,8 @@ class StreamFinderPlugin : public BakkesMod::Plugin::BakkesModPlugin, public Bak
 
 	bool isWindowOpen_ = false;
 	bool isMinimized_ = false;
-	std::string menuTitle_ = "Stream Finder Plugin";	
+	std::string menuTitle_ = "StreamFinderPlugin";	
+	std::string pluginNiceName_ = "Stream Finder Plugin";
 	
 public:
 
@@ -61,7 +62,7 @@ public:
 	void OpenMenu();
 	void CloseMenu();
 	void ToggleMenu(); 
-	void StreamFinderGUI(bool* p_open);
+	void StreamFinderGUI();
 
 	std::vector<std::string> GetPlayersNames();
 
