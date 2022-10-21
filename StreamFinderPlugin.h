@@ -14,20 +14,17 @@
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
 
 
-class StreamFinderPlugin : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::Plugin::PluginSettingsWindow
+class StreamFinderPlugin : public BakkesMod::Plugin::BakkesModPlugin, public BakkesMod::Plugin::PluginSettingsWindow, public BakkesMod::Plugin::PluginWindow
 {
 
-	// std::shared_ptr<bool> enabled;
+	std::shared_ptr<bool> enabled;
 
 	// Inherited via PluginSettingsWindow
 	
 	void RenderSettings() override;
 	std::string GetPluginName() override;
-	void SetImGuiContext(uintptr_t ctx) override;
-	
 
 	// Inherited via PluginWindow
-	
 
 	bool isWindowOpen_ = false;
 	bool isMinimized_ = false;
@@ -52,22 +49,31 @@ public:
 #pragma region GUI
 
 	
-	virtual void Render() override;
+	void Render() override;
 	std::string GetMenuName() override;
 	std::string GetMenuTitle() override;
-	virtual bool ShouldBlockInput() override;
-	virtual bool IsActiveOverlay() override;
-	virtual void OnOpen() override;
-	virtual void OnClose() override;
-	virtual void SetImGuiContext(uintptr_t ctx) override;
+	bool ShouldBlockInput() override;
+	bool IsActiveOverlay() override;
+	void OnOpen() override;
+	void OnClose() override;
+	void SetImGuiContext(uintptr_t ctx) override;
 	void RenderEditNoteModal();
 	void OpenMenu();
 	void CloseMenu();
 	void ToggleMenu(); 
-	
+	void StreamFinderGUI(bool* p_open);
+
 	std::vector<std::string> GetPlayersNames();
 
 private:
+	void renderWebhookTab();
+	void renderBlacklistsTab();
+	void renderExtrasTab();
+	void discbufferfunc();
+	void permabufferfunc();
+	void tempbufferfunc();
+	//void logbufferfunc();
+	void SaveNotif();
 	void Log(std::string msg);
 	bool isWindowOpen = false;
 	bool shouldBlockInput = false;
