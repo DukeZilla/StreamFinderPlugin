@@ -94,8 +94,8 @@ void StreamFinderPlugin::onLoad()
 void StreamFinderPlugin::LoadHooks()
 {
 gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
+gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function TAGame.GameEvent_TA.AddCar", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
-//gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1));
 //gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1));
