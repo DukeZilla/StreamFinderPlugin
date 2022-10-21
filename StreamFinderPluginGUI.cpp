@@ -343,8 +343,8 @@ void StreamFinderPlugin::Render()
 	if (ImGui::Begin(pluginNiceName_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None)) {
         if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
             ImGui::TextUnformatted("Stream Finder Settings");
-            renderWebhookTab();
             renderBlacklistsTab();
+            renderWebhookTab();
             renderExtrasTab();
             ImGui::EndTabBar();
         }
