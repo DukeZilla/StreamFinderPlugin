@@ -128,6 +128,7 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 		stream << name << std::endl;
 	}
 	stream.close();
+
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION pi;
 	memset(&startupInfo, 0, sizeof(STARTUPINFO));
