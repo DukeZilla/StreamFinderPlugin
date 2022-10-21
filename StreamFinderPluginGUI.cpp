@@ -49,10 +49,6 @@ void StreamFinderPlugin::RenderSettings() {
 	}
 
     if (ImGui::Button("Open Stream Finder GUI")) {
-        discbufferfunc();
-        //logbufferfunc();
-        permabufferfunc();
-        tempbufferfunc();
         gameWrapper->Execute([this](GameWrapper* gw) {
             cvarManager->executeCommand("togglemenu " + menuTitle_);
             });
@@ -67,10 +63,6 @@ void StreamFinderPlugin::RenderSettings() {
 
     static char keybindBuf[64] = "F7";
     if (ImGui::Button("Set Keybind")) {
-        discbufferfunc();
-        //logbufferfunc();
-        permabufferfunc();
-        tempbufferfunc();
         cvarManager->setBind(keybindBuf, "togglemenu " + menuTitle_);
     }
     ImGui::SameLine();
@@ -339,6 +331,7 @@ void StreamFinderPlugin::renderExtrasTab() {
 
 void StreamFinderPlugin::Render()
 {
+
     ImGui::SetNextWindowSizeConstraints(ImVec2(700, 500), ImVec2(FLT_MAX, FLT_MAX));
 	if (ImGui::Begin(pluginNiceName_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None)) {
         if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
@@ -392,6 +385,10 @@ bool StreamFinderPlugin::IsActiveOverlay()
 // Called when window is opened
 void StreamFinderPlugin::OnOpen()
 {
+    discbufferfunc();
+    //logbufferfunc();
+    permabufferfunc();
+    tempbufferfunc();
 	isWindowOpen_ = true;
 }
 
