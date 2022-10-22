@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.37"
+echo "Stream Finder | Detector Version 1.38"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -232,7 +232,7 @@ function nameloop {
 	if ($old_name -like "*yt*") {validation}
 	if ($old_name -like "*youtube*") {validation}
 		
-	$name = $old_name # Last resort
+	$global:strmsrch = $old_name # Last resort
 	streamsearch
 	
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -381,8 +381,8 @@ function ignore_string {
 	if ($string_i -eq 'of') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'RL') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'with') {$global:search_pass = "ignore"}
-	if ($string_i -eq '[a-z]') {$global:search_pass = "ignore"}
-	if ($string_i -eq '[0-9]') {$global:search_pass = "ignore"}
+	#if ($string_i -eq '[a-z]') {$global:search_pass = "ignore"}
+	#if ($string_i -eq '[0-9]') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'it') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'yt') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'tiktok') {$global:search_pass = "ignore"}
