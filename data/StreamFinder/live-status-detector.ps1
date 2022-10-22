@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.33"
+echo "Stream Finder | Detector Version 1.37"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -129,13 +129,13 @@ function nameloop {
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
-	$global:name = $names | select -index $i
+	$name = $names | select -index $i
 	
 	echo "----------------------------------------------------------0"
 	echo "Instance #$i"
 	
 	# Null Value Check / Breaker
-	$null_check = $global:name
+	$null_check = $name
     if ($null -eq $null_check) { # at the end of the list the loop will break
 		echo "Search halted, reason: null value break"
 		echo "Reached the end of name list."
@@ -145,7 +145,7 @@ function nameloop {
 		exit
 	}
 	
-	$global:name = $global:name.replace(" ", "_")
+	$name = $name.replace(" ", "_")
 	
 	if ($name -match "ttv") { # Split "ttv" from player name
 		$name = $name -split "ttv"
