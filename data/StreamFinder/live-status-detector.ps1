@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.38"
+echo "Stream Finder | Detector Version 1.40"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -117,6 +117,7 @@ $balmsg.ShowBalloonTip(60000)
 }
 
 echo "Stream search beginning."
+$global:stream = 0
 
 function nameloop {
 	$i++
@@ -140,6 +141,7 @@ function nameloop {
 		echo "Search halted, reason: null value break"
 		echo "Reached the end of name list."
 		$names > blacklist.txt
+		PeaceOfMind
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -164,6 +166,7 @@ function nameloop {
 	if ($i -eq  10) { # to prevent from looping more than necessary
 		echo 'Search halted, reason: Max number break'
 		$names > blacklist.txt
+		PeaceOfMind
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -267,6 +270,7 @@ echo "Streamsearch function on $strmsrch"
 $requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$strmsrch
 $live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
 if ($live_status -like "*True*") { # Discord Bot notification operations \ webhooks
+	$stream = $stream+1
 	$old_name = $restore
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	write-host "Live channel found! ===> $old_name" -foregroundcolor green
@@ -355,6 +359,11 @@ __*Stream Information*__
 	}
 	
 	echo "$twitch_username was found live on $date" >> livestreamlog.txt
+	$global:Pom = @('$old_name is LIVE on twitch!',
+					'Date: $date',
+					'Views: $views'
+					'VODs: $vod')
+	
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	echo "Search on $old_name has been terminated."
@@ -362,6 +371,10 @@ __*Stream Information*__
 	SessionBlacklist
 	nameloop
 	}
+}
+
+function PeaceOfMind {
+	if ($stream -ne "0") {$Pom > PeaceOfMind.txt} else {echo "No live streamers found in this lobby." > PeaceOfMind.txt}
 }
 
 function ignore_string {
