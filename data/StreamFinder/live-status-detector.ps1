@@ -389,6 +389,7 @@ function ignore_string {
 	if ($string_i -eq 'twitch') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'ttv') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'tv') {$global:search_pass = "ignore"}
+	if ($string_i -eq 't') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'is') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'live') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'the') {$global:search_pass = "ignore"}
