@@ -10,15 +10,13 @@ title Stream Finder Plugin Updater
 @echo off
 cls
 
-( echo kill -name "RocketLeague" -force 
-  echo cd .. 
+( echo cd .. 
   echo $p = (pwd^).path 
   echo $source = "https://github.com/DukeZilla/StreamFinderPlugin/archive/refs/heads/main.zip" 
   echo $destination = "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" 
   echo Invoke-WebRequest $source -OutFile $destination 
   echo cd \ 
   echo cd $env:USERPROFILE\Downloads 
-  echo echo "Confirm the prompt below to update." 
   echo Expand-Archive -LiteralPath "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" -Force 
   echo cd StreamFinderPlugin 
   echo cd StreamFinderPlugin-main 
@@ -27,7 +25,7 @@ cls
   echo copy "live-status-detector.ps1" "$p\StreamFinder" 
   echo copy "update.bat" "$p\StreamFinder" 
   echo cd $env:USERPROFILE\Downloads 
-  echo rmdir StreamFinderPlugin 
+  echo rmdir StreamFinderPlugin -Recurse -Force
   echo del StreamFinderPlugin.zip 
   echo function update_notif {
   echo Add-Type -AssemblyName System.Windows.Forms
@@ -50,7 +48,7 @@ if %errorlevel%==1 (
 	echo An error has occurred when attempting to run:
 	echo "updater.ps1"
 	echo.
-	pause
+	timeout 5
 	exit
 )
 echo. 
@@ -58,5 +56,5 @@ del updater.ps1
 color 0a
 echo "Update for the Stream Finder Plugin is finished, you may start Rocket League." 
 echo. 
-pause 
+timeout 5
 exit
