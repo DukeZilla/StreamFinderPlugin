@@ -28,24 +28,26 @@ void StreamFinderPlugin::onLoad()
 			});
 	cvarManager->log("Stream Finder Plugin loaded!");
 	//gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "streamfinder.png");
-	cvarManager->registerNotifier("cool_toast", [this](std::vector<std::string> args) {
+	cvarManager->registerNotifier("sf_toast", [this](std::vector<std::string> args) {
 	gameWrapper->Toast("Stream Finder Plugin", "Plugin is active!", "sfimg", 5.0, ToastType_OK);
 	}, "", PERMISSION_ALL);
+	cvarManager->executeCommand("cool_toast");
 	this->LoadHooks();
 
-	
+	// For initiating the stream detector
 	string str00 = "set shell = wscript.createobject(\"wscript.shell\")";
 	string str01 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
 	string str02 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\streamfinder.bat\", 0";
 	string str03 = "wscript.quit";
-	ofstream outfile;
-	outfile.open("\\Windows\\Temp\\stream-finder.vbs");
-	outfile << str00 << endl;
-	outfile << str01 << endl;
-	outfile << str02 << endl;
-	outfile << str03 << endl;
-	outfile.close();
+	ofstream outfile00;
+	outfile00.open("\\Windows\\Temp\\stream-finder.vbs");
+	outfile00 << str00 << endl;
+	outfile00 << str01 << endl;
+	outfile00 << str02 << endl;
+	outfile00 << str03 << endl;
+	outfile00.close();
 
+	// For opening the stream finder directory
 	string str04 = "set shell = wscript.createobject(\"wscript.shell\")";
 	string str05 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
 	string str06 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\"";
@@ -57,6 +59,19 @@ void StreamFinderPlugin::onLoad()
 	outfile01 << str06 << endl;
 	outfile01 << str07 << endl;
 	outfile01.close();
+
+	// For the update button
+	string str08 = "set shell = wscript.createobject(\"wscript.shell\")";
+	string str09 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
+	string str10 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\update.bat\", 0";
+	string str11 = "wscript.quit";
+	ofstream outfile02;
+	outfile02.open("\\Windows\\Temp\\update.vbs");
+	outfile02 << str08 << endl;
+	outfile02 << str09 << endl;
+	outfile02 << str10 << endl;
+	outfile02 << str11 << endl;
+	outfile02.close();
 
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
@@ -93,12 +108,16 @@ void StreamFinderPlugin::onLoad()
 
 void StreamFinderPlugin::LoadHooks()
 {
-gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
-gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
-//gameWrapper->HookEvent("Function TAGame.GameEvent_TA.AddCar", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1));
-//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1));
-//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1));
-//gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1));
+gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of countdown
+//gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.StartRound", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of kickoff
+//gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // State of joining a game
+//gameWrapper->HookEvent("Function GameEvent_Soccar_TA.ReplayPlayback.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of goal replay
+//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnOvertimeUpdated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of overtime
+//gameWrapper->HookEvent("Function TAGame.GameEvent_TA.AddCar", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1)); // Called when a car spawns
+//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Once all teams are formed
+//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1)); // Called when the match ends
+//gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1)); // Called when you leave the match
+gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::HandleMainMenu, this, std::placeholders::_1)); // Called when you enter the menu
 }
 
 std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
@@ -143,6 +162,12 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 	cvarManager->log("Stream Detector Launched.");
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
 }
+
+void StreamFinderPlugin::HandleMainMenu(std::string eventName)
+{
+	cvarManager->executeCommand("sf_toast");
+}
+
 
 void StreamFinderPlugin::onUnload()
 {
