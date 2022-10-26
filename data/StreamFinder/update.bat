@@ -10,7 +10,19 @@ title Stream Finder Plugin Updater
 @echo off
 cls
 
-( echo cd .. 
+( echo function start_notif {
+  echo Add-Type -AssemblyName System.Windows.Forms
+  echo $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+  echo $path = (Get-Process -id $pid^).Path
+  echo $balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path^)
+  echo $balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+  echo $balmsg.BalloonTipText = "Update starting..."
+  echo $balmsg.BalloonTipTitle = "Stream Finder Plugin"
+  echo $balmsg.Visible = $true
+  echo $balmsg.ShowBalloonTip(60000^)
+  echo }
+  echo start_notif
+  echo cd .. 
   echo $p = (pwd^).path 
   echo $source = "https://github.com/DukeZilla/StreamFinderPlugin/archive/refs/heads/main.zip" 
   echo $destination = "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" 
