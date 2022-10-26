@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.40"
+echo "Stream Finder | Detector Version 1.41"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -198,42 +198,19 @@ function nameloop {
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	
-	$amount = "check"
+	$global:amount = "pass"
 	
-	function validation {
-		if ($amount -eq "pass") {break}
-		
-		if ($name -match "twitch") { # Split "twitch" from player name
-			$name = $name -split "twitch"
-			echo 'twitch name split'
-		}
-		
-		$global:amount = "pass"
-		$name = $name.trim('')
-		$name = $name.trim(' ')
-		$name = $name | where{$_ -ne ""}
-		$split_name00 = $name -split "_"
-		$split_name01 = $old_name -split "\W"
-		$y00 = $split_name00.count
-		$y01 = $split_name01.count
-		$y00 = $y00-1
-		$y01 = $y01-1
-		
-		echo "No live streamer found, researching..."
-		echo "Initiated split searching"
-		research
-	
-	}
-	
-	if ($old_name -like "*twitch.tv*") {validation}
-	if ($old_name -like "*twitch*") {validation}
-	if ($old_name -like "*live*") {validation}
-	if ($old_name -like "*ttv*") {validation}
-	if ($old_name -like "*tv*") {validation}
-	if ($old_name -like "*t.tv*") {validation}
-	if ($old_name -like "*tiktok*") {validation}
-	if ($old_name -like "*yt*") {validation}
-	if ($old_name -like "*youtube*") {validation}
+	if ($old_name -like "*twitch.tv*") {$global:amount = "check"}
+	if ($old_name -like "*twitch*") {$global:amount = "check"}
+	if ($old_name -like "*live*") {$global:amount = "check"}
+	if ($old_name -like "*ttv*") {$global:amount = "check"}
+	if ($old_name -like "*tv*") {$global:amount = "check"}
+	if ($old_name -like "*t.tv*") {$global:amount = "check"}
+	if ($old_name -like "*tiktok*") {$global:amount = "check"}
+	if ($old_name -like "*yt*") {$global:amount = "check"}
+	if ($old_name -like "*youtube*") {$global:amount = "check"}
+	if ($global:amount -eq "check") {validation}
+	$global:amount = "pass"
 		
 	$global:strmsrch = $old_name # Last resort
 	streamsearch
@@ -265,11 +242,36 @@ function nameloop {
 	nameloop
 }
 
+function validation {
+	write-host "Validation process..."	
+	
+	if ($name -match "twitch") { # Split "twitch" from player name
+		$name = $name -split "twitch"
+		echo 'twitch name split'
+	}
+	
+	$name = $name.trim('')
+	$name = $name.trim(' ')
+	$name = $name | where{$_ -ne ""}
+	$split_name00 = $name -split "_"
+	$split_name01 = $old_name -split "\W"
+	$y00 = $split_name00.count
+	$y01 = $split_name01.count
+	$y00 = $y00-1
+	$y01 = $y01-1
+	
+	echo "No live streamer found, researching..."
+	echo "Initiated split searching"
+	research
+
+}
+
 function streamsearch { # The stream finder itself
-echo "Streamsearch function on $strmsrch"
-$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$strmsrch
-$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"}
-if ($live_status -like "*True*") { # Discord Bot notification operations \ webhooks
+	echo "Streamsearch function on $strmsrch"
+	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri https://api.twitch.tv/helix/search/channels?query=$strmsrch # Searching the player's name through twitch database
+	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"} # Determining whether streamer is live or not
+
+	if ($live_status -like "*True*") { # Stream information management function | Discord webhook operations
 	$stream = $stream+1
 	$old_name = $restore
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -278,33 +280,33 @@ if ($live_status -like "*True*") { # Discord Bot notification operations \ webho
 	echo "Sound played ;)"
 	WinBallon
 	
-	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at
+	$started_at = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name, started_at | where{$_.is_live -match "True"} | select started_at # For the timesum cmdlet
 	$split00 = $live_status | select -expandproperty broadcaster_login # Isolating the broadcaster's name
 	$trim00 = $split00 | out-string
 	
-	$power_version = $PSVersionTable.PSVersion | select -expandproperty Major
+	$power_version = $PSVersionTable.PSVersion | select -expandproperty Major # Get powershell version
 	if ($power_version -eq "7") {Psv7} else {Psv5}
 	
 	echo "Stream started at $time00"
 	echo "Current UTC time: $time01"
 	$tsum = [datetime]$time01 -[datetime]$time00 # Time sum
-	$t0 = $tsum | select -expandproperty hours # Isolating outputs
+	$t0 = $tsum | select -expandproperty hours # v Isolating outputs v
 	$t1 = $tsum | select -expandproperty minutes
 	$t2 = $tsum | select -expandproperty seconds
 	$t3 = $tsum | select -expandproperty days
 	if ($t3 -ne 0) { # If the streamer was streaming for more than 24 hours
-	for ($x = 1;$x -le $t3;$x++) {
-		write-host "Streamer has been live for more than 24 hours!"
-		$t0 = $t0 + 24
+		for ($x = 1;$x -le $t3;$x++) {
+			write-host "Streamer has been live for more than 24 hours!"
+			$t0 = $t0 + 24
 		}
 	}
-	$char0 = $t0 | measure -character | select -expandproperty characters
+	$char0 = $t0 | measure -character | select -expandproperty characters # Re-isolating / Reformating timesum outputs
 	$char1 = $t1 | measure -character | select -expandproperty characters
 	$char2 = $t2 | measure -character | select -expandproperty characters
 	if ($char0 -eq 1 ) {$t0 = "0$t0"}
 	if ($char1 -eq 1 ) {$t1 = "0$t1"}
 	if ($char2 -eq 1 ) {$t2 = "0$t2"}
-	$timestamp = "$t0`:$t1`:$t2"
+	$timestamp = "$t0`:$t1`:$t2" # Final 
 	echo "timestamp: $timestamp"
 	$twitch_username = $trim00.trim('')
 	$trim02 = get-date | out-string # Log file
@@ -353,6 +355,7 @@ __*Stream Information*__
 # ^ Discord Notification Message ^
 
 	iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
+	
 	if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {webhook_error} Else {
 		echo "Discord notification sent!"
 		echo "Discord url = $url"
@@ -374,7 +377,9 @@ __*Stream Information*__
 }
 
 function PeaceOfMind {
-	if ($stream -ne "0") {$Pom > PeaceOfMind.txt} else {echo "No live streamers found in this lobby." > PeaceOfMind.txt}
+	$msg = 'No live streamers found in this lobby.'
+	if ($stream -ne "0") {$Pom > PeaceOfMind.json} else {$msg > PeaceOfMind.json}
+	#start "PeaceRedistributer.bat" -window minimize
 }
 
 function ignore_string {
@@ -394,8 +399,6 @@ function ignore_string {
 	if ($string_i -eq 'of') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'RL') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'with') {$global:search_pass = "ignore"}
-	#if ($string_i -eq '[a-z]') {$global:search_pass = "ignore"}
-	#if ($string_i -eq '[0-9]') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'it') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'yt') {$global:search_pass = "ignore"}
 	if ($string_i -eq 'tiktok') {$global:search_pass = "ignore"}
@@ -496,6 +499,7 @@ function PSv7 { # Timestamp function for powershell version 7 and above
 }
 
 nameloop
+write-host "Bottom of script reached."
 exit
 
 # Extras
