@@ -12,7 +12,6 @@ cls
 
 ( echo kill -name "RocketLeague" -force 
   echo cd .. 
-  echo cd .. 
   echo $p = (pwd^).path 
   echo $source = "https://github.com/DukeZilla/StreamFinderPlugin/archive/refs/heads/main.zip" 
   echo $destination = "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" 
@@ -25,8 +24,8 @@ cls
   echo cd StreamFinderPlugin-main 
   echo cd data 
   echo cd StreamFinder 
-  echo copy "live-status-detector.ps1" "$p\data\StreamFinder" 
-  echo copy "update.bat" "$p\data\StreamFinder" 
+  echo copy "live-status-detector.ps1" "$p\StreamFinder" 
+  echo copy "update.bat" "$p\StreamFinder" 
   echo cd $env:USERPROFILE\Downloads 
   echo rmdir StreamFinderPlugin 
   echo del StreamFinderPlugin.zip 
