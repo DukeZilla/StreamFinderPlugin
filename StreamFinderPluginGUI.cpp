@@ -10,11 +10,10 @@
 using namespace std;
 
 // Plugin Settings Window code here
-static void StreamFinderGUI();
 static char bufferBoi[1024]; // For the discord webhook
 static char buffer00[1024]; // For the Permanent blacklist
 static char buffer01[1024]; // For the Lobby list
-//static char buffer02[1024]; // For the log file
+static char buffer02[1024]; // For the log file
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return pluginNiceName_;
@@ -30,22 +29,19 @@ std::string StreamFinderPlugin::GetPluginName() {
 ////////////////////////
 
 void StreamFinderPlugin::RenderSettings() {
-    ImGui::TextUnformatted("PRE ALPHA Version 0.95 | This Plugin is still under development");
-
+    ImGui::TextUnformatted("PRE-ALPHA Version 0.96 | This plugin is still under development.");
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
-
 	if (!enableCvar) {
 		return;
 	}
 
 	bool enabled = enableCvar.getBoolValue();
-
 	if (ImGui::Checkbox("Enable Plugin", &enabled)) {
 		enableCvar.setValue(enabled);
 	}
 
 	if (ImGui::IsItemHovered()) {
-		ImGui::SetTooltip("Toggle Stream Finder Plugin");
+		ImGui::SetTooltip("Enable The Stream Finder Plugin");
 	}
 
     if (ImGui::Button("Open Stream Finder GUI")) {
@@ -56,36 +52,66 @@ void StreamFinderPlugin::RenderSettings() {
     }
 
     if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Stream Finder Settings Manager");
+        ImGui::SetTooltip("Stream Finder Graphical User Interface Window");
     }
      
     ImGui::TextUnformatted("------------------------------------------------------O");
-
     static char keybindBuf[64] = "F7";
     if (ImGui::Button("Set Keybind")) {
         cvarManager->setBind(keybindBuf, "togglemenu " + menuTitle_);
     }
+
     ImGui::SameLine();
     ImGui::PushItemWidth(60);
     ImGui::InputText("##keybind", keybindBuf, IM_ARRAYSIZE(keybindBuf));
     ImGui::PopItemWidth();
-
     ImGui::TextUnformatted("------------------------------------------------------O");
 
+    UpdateNotif();
+
+    ImGui::TextUnformatted("------------------------------------------------------O");
     ImGui::TextUnformatted("Plugin made by P as in Papi | Special thanks to the bakkesmod programming community for help!");
-}
-
-/// <summary>
-/// Toggled Window
-/// </summary>
-
-void StreamFinderPlugin::StreamFinderGUI()
-{
 }
 
 /// <summary>
 /// Buttons
 /// </summary>
+
+void StreamFinderPlugin::UpdateNotif()
+{
+    if (ImGui::Button("Update Plugin", ImVec2(0, 0))) {
+        ImGui::OpenPopup("Update Stream Finder");
+    }
+    ImGui::SameLine();
+    ImGui::TextUnformatted("No need to restart Rocket League.");
+
+    if (ImGui::BeginPopupModal("Update Stream Finder", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextUnformatted("Are you sure you want to update?");
+        if (ImGui::Button("Yes", ImVec2(120, 0))) {
+            STARTUPINFO startupInfo;
+            PROCESS_INFORMATION pi;
+            memset(&startupInfo, 0, sizeof(STARTUPINFO));
+            startupInfo.cb = sizeof(STARTUPINFO);
+            startupInfo.wShowWindow = false;
+            // Get path for each computer, non-user specific and non-roaming data.
+            // Append product-specific path
+            TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\update.vbs""");
+            CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            cvarManager->log("Update launched, see you on the other side!.");
+            HookTestNotif();
+            // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("No", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
 
 void StreamFinderPlugin::DiscSaveNotif()
 {
@@ -99,7 +125,7 @@ void StreamFinderPlugin::DiscSaveNotif()
     if (ImGui::BeginPopupModal("Discord Webhook", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Webhook saved!");
-        if (ImGui::Button("Okay.", ImVec2(120, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(135, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -118,7 +144,7 @@ void StreamFinderPlugin::ListSaveNotif()
     if (ImGui::BeginPopupModal("Blacklist", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Changes has been saved!");
-        if (ImGui::Button("Okay.", ImVec2(120, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(135, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -151,7 +177,7 @@ void StreamFinderPlugin::HookTestNotif()
     if (ImGui::BeginPopupModal("Webhook Test", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Webhook test initiated!");
-        if (ImGui::Button("Okay.", ImVec2(120, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(135, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -162,7 +188,7 @@ void StreamFinderPlugin::HookTestNotif()
 /// Buffer Functions
 /// </summary>
 
-void StreamFinderPlugin::discbufferfunc() 
+void StreamFinderPlugin::discbufferfunc() // Used for the discord tab
 {
     std::string discstring;
     std::ifstream webhook(gameWrapper->GetDataFolder() / "StreamFinder" / "discord-webhook.txt");
@@ -173,7 +199,7 @@ void StreamFinderPlugin::discbufferfunc()
     webhook.close();
 }
 
-void StreamFinderPlugin::permabufferfunc()
+void StreamFinderPlugin::permabufferfunc() // Used for the blacklist
 {
     std::string line00;
     std::string permastring;
@@ -191,7 +217,7 @@ void StreamFinderPlugin::permabufferfunc()
     perma.close();
 }
 
-void StreamFinderPlugin::tempbufferfunc()
+void StreamFinderPlugin::tempbufferfunc() // Used for the "Current Lobby List"
 {
     std::string line01;
     std::string tempstring;
@@ -209,42 +235,40 @@ void StreamFinderPlugin::tempbufferfunc()
     temp.close();
 }
 
-//void StreamFinderPlugin::logbufferfunc()
-//{
-//    std::string line02;
-//    std::string logstring;
-//    std::ifstream logstrm(gameWrapper->GetDataFolder() / "StreamFinder" / "livestreamlog.txt");
-//    while (getline(logstrm, line02))
-//    {
-//        if (line02.empty()) {
-//            break;
-//        }
-//        logstring += line02 + '\n';
-//    }
-//    // do outside of render func
-//    memset(&buffer02, 0, _countof(buffer02)); // init char array
-//    strncpy_s(buffer02, logstring.c_str(), _countof(buffer02)); // print text to the array/buffer
-//    logstrm.close();
-//    std::ofstream testing(gameWrapper->GetDataFolder() / "StreamFinder" / "test.txt");
-//    testing << std::string(buffer02) << endl;
-//    testing.close();
-//}
+void StreamFinderPlugin::logbufferfunc() // Used for the peace of mind feature
+{
+    std::string line02;
+    std::string logstring;
+    std::ifstream logstrm(gameWrapper->GetDataFolder() / "StreamFinder" / "PeaceOfMind.json");
+    while (getline(logstrm, line02))
+    {
+        if (line02.empty()) {
+            break;
+        }
+        logstring += line02 + '\n';
+    }
+    // do outside of render func
+    memset(&buffer02, 0, _countof(buffer02)); // init char array
+    strncpy_s(buffer02, logstring.c_str(), _countof(buffer02)); // print text to the array/buffer
+    logstrm.close();
+}
 
 /// <summary>
 /// Rendered Tabs
 /// </summary>
 
 void StreamFinderPlugin::renderWebhookTab() {
-    if (ImGui::BeginTabItem("Discord Webhook")) {
+    if (ImGui::BeginTabItem("Discord Webhook Setup")) {
         ImGui::Separator();
         ImGui::TextUnformatted("DISCORD WEBHOOK LINK");
         ImGui::Separator();
-        ImGui::TextUnformatted("To receive discord notifications, create a channel webhook and paste it here:");
+        ImGui::TextUnformatted("To receive notifications of live streamers, create a channel webhook and paste it here:");
         ImGui::InputText("###Link", bufferBoi, _countof(bufferBoi));
         DiscSaveNotif();
         ImGui::SameLine();
         HookTestNotif();
         ImGui::Separator();
+
         if (ImGui::CollapsingHeader("Help"))
         {
             ImGui::Text("STREAM FINDER 101");
@@ -252,12 +276,14 @@ void StreamFinderPlugin::renderWebhookTab() {
             ImGui::Text("DISCORD WEBHOOK:");
             ImGui::BulletText("- How to set up the discord webhook -");
             ImGui::BulletText("1.) Open Discord and head to your personal server, if you don't have one, start your own server.");
-            ImGui::BulletText("2.) Right click on the channel you wish to receive stream notifications with and click \"Edit Channel\"");
+            ImGui::BulletText("2.) Once you are in your server, right click on the channel you wish to receive stream notifications with and click \"Edit Channel\"");
             ImGui::BulletText("3.) Click \"Intergrations\" and then click \"Create Webhook\" Once you have created your webhook,\n"
                 "copy the webhook URL and paste it in the text box above.");
             ImGui::BulletText("More info can be found on the discord support site.");
+            ImGui::Text("Once you have the discord webhook link all set up, you may press the \"Test Webhook\" button to test your webhook.");
             ImGui::Separator();
         }
+
         ImGui::EndTabItem();
     }
 }
@@ -267,6 +293,7 @@ void StreamFinderPlugin::renderBlacklistsTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("BLACKLIST");
         ImGui::Separator();
+
         if (ImGui::CollapsingHeader("Blacklist", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 0);
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 1);
@@ -275,14 +302,20 @@ void StreamFinderPlugin::renderBlacklistsTab() {
             ImGui::InputTextMultiline("###List", buffer00, _countof(buffer00));
             ListSaveNotif();
         }
+
         if (ImGui::CollapsingHeader("Current Lobby")) {
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 0);
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 1);
             ImGui::TextUnformatted("Players in your current lobby will appear here.");
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer01, _countof(buffer01));
+            if (ImGui::Button("Refresh")) {
+                tempbufferfunc();
+            }
         }
+
         ImGui::Separator();
+
         if (ImGui::CollapsingHeader("Help"))
         {
             ImGui::Text("STREAM FINDER 101");
@@ -290,9 +323,12 @@ void StreamFinderPlugin::renderBlacklistsTab() {
             ImGui::Text("BLACKLIST INFO:");
             ImGui::BulletText("- Information on blacklists -");
             ImGui::BulletText("Permanent Blacklist: Whatever names are included in this list will be completely ignored by the program indefinitely,.");
+            ImGui::BulletText("Be sure the names are typed exactly the same as the projected RL name.");
+            ImGui::BulletText("The \"Current Lobby\" list refreshes everytime you toggle the GUI, or by pressing the refresh button.");
             ImGui::BulletText("Side note: All bot names have been blacklisted by default to prevent false positives.");
             ImGui::Separator();
         }
+
         ImGui::EndTabItem();
     }
 }
@@ -302,17 +338,21 @@ void StreamFinderPlugin::renderExtrasTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("MISC");
         ImGui::Separator();
-        //ImGui::TextUnformatted("LIVE STREAM LOG:");
-        //ImGui::TextUnformatted("Streamers who were found will be logged here.");
-        //ImGui::InputTextMultiline("###Log", buffer02, _countof(buffer02));
+        ImGui::TextUnformatted("Current Stream Finder Log:");
+        ImGui::TextUnformatted("Streamers who were found will be logged here.");
+        ImGui::InputTextMultiline("###Misc", buffer02, _countof(buffer02));
         ImGui::Separator();
+
         if (ImGui::Button("Open Stream Finder Folder")) {
             system("C:\\Windows\\Temp\\directory.vbs");
         }
+
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Opens the Stream Finder directory folder");
         }
+
         ImGui::Separator();
+
         if (ImGui::CollapsingHeader("Help")) {
             ImGui::Text("STREAM FINDER 101");
             ImGui::Separator();
@@ -323,6 +363,7 @@ void StreamFinderPlugin::renderExtrasTab() {
             //ImGui::BulletText("You may also modify the sound effect, be sure the sound file name is modified in \"sound.vbs\"");
             ImGui::Separator();
         }
+
         ImGui::EndTabItem();
     }
 }
@@ -331,8 +372,7 @@ void StreamFinderPlugin::renderExtrasTab() {
 
 void StreamFinderPlugin::Render()
 {
-
-    ImGui::SetNextWindowSizeConstraints(ImVec2(700, 500), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(750, 550), ImVec2(FLT_MAX, FLT_MAX));
 	if (ImGui::Begin(pluginNiceName_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None)) {
         if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
             ImGui::TextUnformatted("Stream Finder Settings");
@@ -386,7 +426,7 @@ bool StreamFinderPlugin::IsActiveOverlay()
 void StreamFinderPlugin::OnOpen()
 {
     discbufferfunc();
-    //logbufferfunc();
+    logbufferfunc();
     permabufferfunc();
     tempbufferfunc();
 	isWindowOpen_ = true;
