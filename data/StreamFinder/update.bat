@@ -54,7 +54,7 @@ if %errorlevel%==1 (
 echo. 
 del updater.ps1
 color 0a
-echo "Update for the Stream Finder Plugin is finished, you may start Rocket League." 
+echo "Update for the Stream Finder Plugin is finished!" 
 echo. 
 timeout 5
 exit
