@@ -41,14 +41,14 @@ public:
 	void RenderDrawable(CanvasWrapper canvas);
 	void OpenScoreboard(std::string eventName);
 	void CloseScoreboard(std::string eventName);
-	void HandlePlayerAdded(std::string eventName);
 	*/
 
-	void LaunchQuickNoteModal();
+	//void LaunchQuickNoteModal();
 	void HandleGameStart(std::string eventName);
+	void HandleMainMenu(std::string eventName);
+	//void HandlePlayerAdded(std::string eventName);
 
 #pragma region GUI
-
 	
 	void Render() override;
 	std::string GetMenuName() override;
@@ -58,22 +58,23 @@ public:
 	void OnOpen() override;
 	void OnClose() override;
 	void SetImGuiContext(uintptr_t ctx) override;
-	void RenderEditNoteModal();
+	//void RenderEditNoteModal();
 	void OpenMenu();
 	void CloseMenu();
 	void ToggleMenu(); 
-	void StreamFinderGUI();
 
 	std::vector<std::string> GetPlayersNames();
 
 private:
+
 	void renderWebhookTab();
 	void renderBlacklistsTab();
 	void renderExtrasTab();
 	void discbufferfunc();
 	void permabufferfunc();
 	void tempbufferfunc();
-	//void logbufferfunc();
+	void logbufferfunc();
+	void UpdateNotif();
 	void DiscSaveNotif();
 	void ListSaveNotif();
 	void HookTestNotif();
