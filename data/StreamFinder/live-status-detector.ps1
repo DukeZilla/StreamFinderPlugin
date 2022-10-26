@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.41"
+echo "Stream Finder | Detector Version 1.42"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -46,7 +46,6 @@ return $authHeadTwitch
 }
 
 iwr -method post -uri $twitchUri -UseBasicParsing
-$i = -1
 
 # Discord webhook linke to variable
 $p = (pwd).path
@@ -118,6 +117,7 @@ $balmsg.ShowBalloonTip(60000)
 
 echo "Stream search beginning."
 $global:stream = 0
+$i = -1
 
 function nameloop {
 	$i++
@@ -263,7 +263,6 @@ function validation {
 	echo "No live streamer found, researching..."
 	echo "Initiated split searching"
 	research
-
 }
 
 function streamsearch { # The stream finder itself
@@ -378,7 +377,7 @@ __*Stream Information*__
 
 function PeaceOfMind {
 	$msg = 'No live streamers found in this lobby.'
-	if ($stream -ne "0") {$Pom > PeaceOfMind.json} else {$msg > PeaceOfMind.json}
+	if ($stream -ne "0") {$Pom | Out-file "PeaceOfMind.txt" -Encoding ASCII} else {$msg | Out-file "PeaceOfMind.txt" -Encoding ASCII}
 	#start "PeaceRedistributer.bat" -window minimize
 }
 
