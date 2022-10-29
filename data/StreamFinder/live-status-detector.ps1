@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.42"
+echo "Stream Finder | Detector Version 1.45"
 
 class TwitchAuthToken {
  [string]$tokenName = "Stream Finder Plugin"
@@ -159,8 +159,9 @@ function nameloop {
 		echo 't.tv name split'
 	}
 
-		$name = $name -replace('-', '_')
-		$name = $name -replace ('\W', '')
+		$name = $name -replace('-', '_') # Changing Dashes to underscores
+		$name = $name -replace ('\W', '') # Removing common special characters
+		$specChar = $name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
 
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
@@ -199,7 +200,6 @@ function nameloop {
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	
 	$global:amount = "pass"
-	
 	if ($old_name -like "*twitch.tv*") {$global:amount = "check"}
 	if ($old_name -like "*twitch*") {$global:amount = "check"}
 	if ($old_name -like "*live*") {$global:amount = "check"}
@@ -211,6 +211,12 @@ function nameloop {
 	if ($old_name -like "*youtube*") {$global:amount = "check"}
 	if ($global:amount -eq "check") {validation}
 	$global:amount = "pass"
+	
+	echo "-------------------O" # Method 3
+	echo "Special character removal"
+	write-host "Researching ""$specChar""" -foregroundcolor yellow
+	$global:strmsrch = $specChar
+	streamsearch	
 		
 	$global:strmsrch = $old_name # Last resort
 	streamsearch
@@ -328,6 +334,7 @@ function streamsearch { # The stream finder itself
 		$vod = "True"
 		$warning = ""
 	}
+	$old_name =  $old_name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', ''
 	
 # v Discord Notification Message v
 $url = "$discord_webhook"
@@ -352,7 +359,8 @@ __*Stream Information*__
 -------------------------------------------------------O
 - $content07 " } 
 # ^ Discord Notification Message ^
-
+	
+	write-host "Sending discord notification..."
 	iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Application/Json' # Sending live notification to discord
 	
 	if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {webhook_error} Else {
@@ -375,10 +383,35 @@ __*Stream Information*__
 	}
 }
 
+function discord_msg {
+# v Discord Notification Message v
+$url = "$discord_webhook"
+$content00 = "**$old_name is LIVE on Twitch! $warning**" 
+$content01 = "Title: $title"
+$content02 = "Date found: $date" 
+$content03 = "Timestamp: $timestamp"
+$content04 = "Views: $views"
+$content05 = "VODs: $vod"
+$content06 = "Language: $lang"
+$content07 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
+$payload = [PSCustomObject]@{ 
+content = "$content00
+-------------------------------------------------------O
+__*Stream Information*__
+- $content01
+- $content02
+- $content03
+- $content04
+- $content05
+- $content06
+-------------------------------------------------------O
+- $content07 " } 
+# ^ Discord Notification Message ^
+}
+
 function PeaceOfMind {
 	$msg = 'No live streamers found in this lobby.'
 	if ($stream -ne "0") {$Pom | Out-file "PeaceOfMind.txt" -Encoding ASCII} else {$msg | Out-file "PeaceOfMind.txt" -Encoding ASCII}
-	#start "PeaceRedistributer.bat" -window minimize
 }
 
 function ignore_string {
