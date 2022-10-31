@@ -16,8 +16,6 @@ function lobbylog {
 	
 	echo "----------------------------------------------------------0"
 	echo "Instance #$i"
-	echo "Old name: $old_name"
-	echo "Name: $name"
 	
 	# Null Value Check / Breaker
 	$null_check = $name
@@ -43,7 +41,10 @@ function lobbylog {
 
 		$name = $name -replace('-', '_') # Changing Dashes to underscores
 		$name = $name -replace ('\W', '') # Removing common special characters
-		$global:specChar = $name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
+		$name = $name.trim() # Remove blank space
+		$name = $name | out-string
+		$name = $name.trim() # Remove blank space
+		$global:specChar = $name -replace '[^a-zA-Z0-9\/!.@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
 
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
@@ -80,18 +81,20 @@ function lobbylog {
 	lobbylog
 	}
 	
+	echo "Old name:$old_name"
+	echo "Name:$name"
+	echo "SpecChar:$specChar"
+	
 	$requestRAW03 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/users?login=$specChar"
-	$id = (ConvertFrom-Json ($requestRAW03)).Data -match "Rocket League" | select -expandproperty id
-
+	$id = (ConvertFrom-Json ($requestRAW03)).Data | select -expandproperty id
 	if ($null -eq $id) {
 	echo "$old_name has no twitch channel found" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
 	lobbylog
 	}
-
+	
 	$requestRAW04 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/videos?user_id=$id"
 	$json_request = (ConvertFrom-Json ($requestRAW04)).Data | select -expandproperty published_at
 	$last_live = $json_request | select -index 0
-
 	if ($null -eq $last_live) {
 	echo "$old_name is not live" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
 	lobbylog
