@@ -35,6 +35,7 @@ cls
   echo cd data 
   echo cd StreamFinder 
   echo copy "updater.ps1" "$p\StreamFinder" 
+  echo sleep 0.5
   echo exit ) >> confirmer.ps1 
   
 echo.
