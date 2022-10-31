@@ -34,29 +34,19 @@ cls
   echo cd StreamFinderPlugin-main 
   echo cd data 
   echo cd StreamFinder 
-  echo copy "live-status-detector.ps1" "$p\StreamFinder" 
-  echo copy "logger.ps1" "$p\StreamFinder" 
-  echo copy "log.bat" "$p\StreamFinder"
-  echo copy "Twitch-Token.psm1" "$p\StreamFinder"
-  echo copy "update.bat" "$p\StreamFinder" 
-  echo cd $env:USERPROFILE\Downloads 
-  echo rmdir StreamFinderPlugin -Recurse -Force
-  echo del StreamFinderPlugin.zip 
-  echo function update_notif {
-  echo Add-Type -AssemblyName System.Windows.Forms
-  echo $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
-  echo $path = (Get-Process -id $pid^).Path
-  echo $balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path^)
-  echo $balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
-  echo $balmsg.BalloonTipText = "Update complete!"
-  echo $balmsg.BalloonTipTitle = "Stream Finder Plugin"
-  echo $balmsg.Visible = $true
-  echo $balmsg.ShowBalloonTip(60000^)
-  echo }
-  echo update_notif
-  echo exit ) >> updater.ps1 
+  echo copy "updater.ps1" "$p\StreamFinder" 
+  echo exit ) >> confirmer.ps1 
   
 echo.
+powershell.exe -executionpolicy bypass -f "confirmer.ps1"
+if %errorlevel%==1 (
+	color 4
+	echo An error has occurred when attempting to run:
+	echo "confirmer.ps1"
+	echo.
+	timeout 5
+	exit
+)
 powershell.exe -executionpolicy bypass -f "updater.ps1"
 if %errorlevel%==1 (
 	color 4
@@ -68,6 +58,7 @@ if %errorlevel%==1 (
 )
 echo. 
 del updater.ps1
+del confirmer.ps1
 color 0a
 echo Update for the Stream Finder Plugin is finished!
 echo. 
