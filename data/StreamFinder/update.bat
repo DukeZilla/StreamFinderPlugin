@@ -6,7 +6,7 @@ CD /D "%~dp0"
 goto main
 
 :main
-title Stream Finder Plugin Updater
+title Stream Finder Plugin Updater V1.0
 @echo off
 cls
 
@@ -35,6 +35,9 @@ cls
   echo cd data 
   echo cd StreamFinder 
   echo copy "live-status-detector.ps1" "$p\StreamFinder" 
+  echo copy "logger.ps1" "$p\StreamFinder" 
+  echo copy "log.bat" "$p\StreamFinder"
+  echo copy "Twitch-Token.psm1" "$p\StreamFinder"
   echo copy "update.bat" "$p\StreamFinder" 
   echo cd $env:USERPROFILE\Downloads 
   echo rmdir StreamFinderPlugin -Recurse -Force
