@@ -1,51 +1,9 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.45"
+echo "Stream Finder | Detector Version 1.50"
 
-class TwitchAuthToken {
- [string]$tokenName = "Stream Finder Plugin"
- [string]$redirectURL = "https://localhost"
- [string]$clientID = "4xeemdr46tyggrk8nuwmcw1l44ln63"
- [string]$clientSecret = "7igcrwskulfppl0jozcm6j9q4qe72y"
- [string]$accessToken
- [datetime]$tokenCollected
- [datetime]$tokenExpiration
- [string]$tokenType = "bearer"
- [string]$authenticationHeader
-}
-
-Function global:Get-TwitchAccessToken {
-$twitchUri = "https://id.twitch.tv/oauth2/token"
-$twitchUri += '?client_id='+[uri]::EscapeDataString("4xeemdr46tyggrk8nuwmcw1l44ln63")
-$twitchUri += '&client_secret='+[uri]::EscapeDataString("7igcrwskulfppl0jozcm6j9q4qe72y")
-$twitchUri += '&grant_type=client_credentials'
-$response = Invoke-WebRequest -Method Post -Uri $twitchUri -UseBasicParsing
-$accessTokenImport = ConvertFrom-Json -InputObject $response.Content
-[TwitchAuthToken]$twitchAccessToken = [TwitchAuthToken]::New()
-$twitchAccessToken.accessToken = $accessTokenImport.access_token
-$twitchAccessToken.tokenCollected = Get-date
-$twitchAccessToken.tokenExpiration = (Get-date).AddSeconds($accessTokenImport.expires_in)
-$twitchAccessToken.tokenType = $accessTokenImport.token_type
-$twitchAccessToken.authenticationHeader = "Authorization: Bearer "+$accessTokenImport.access_token
-return $twitchAccessToken
-}
-
-$twitchUri = "https://id.twitch.tv/oauth2/token"
-$twitchUri += '?client_id='+[uri]::EscapeDataString("4xeemdr46tyggrk8nuwmcw1l44ln63")
-$twitchUri += '&client_secret='+[uri]::EscapeDataString("7igcrwskulfppl0jozcm6j9q4qe72y")
-$twitchUri += '&grant_type=client_credentials'
-
-Function Get-AuthenticationHeaderTwitch {
-$accessToken = Get-TwitchAccessToken
-$authHeadTwitch = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$authHeadTwitch = @{}
-$authHeadTwitch.Add("Authorization","Bearer "+$accessToken.accesstoken)
-$authHeadTwitch.Add("Client-ID", "4xeemdr46tyggrk8nuwmcw1l44ln63")
-return $authHeadTwitch
-}
-
-iwr -method post -uri $twitchUri -UseBasicParsing
+Import-Module C:Twitch-Token.psm1
 
 # Discord webhook linke to variable
 $p = (pwd).path
@@ -119,6 +77,12 @@ echo "Stream search beginning."
 $global:stream = 0
 $i = -1
 
+# Logging
+echo "set shell = wscript.createobject(`"wscript.shell`")" > startlog.vbs
+echo "shell.run `"log.bat`", 0" >> startlog.vbs
+echo "wscript.quit" >> startlog.vbs
+start-process startlog.vbs
+
 function nameloop {
 	$i++
 	
@@ -141,7 +105,6 @@ function nameloop {
 		echo "Search halted, reason: null value break"
 		echo "Reached the end of name list."
 		$names > blacklist.txt
-		PeaceOfMind
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -161,13 +124,12 @@ function nameloop {
 
 		$name = $name -replace('-', '_') # Changing Dashes to underscores
 		$name = $name -replace ('\W', '') # Removing common special characters
-		$specChar = $name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
+		$global:specChar = $name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
 
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
 		echo 'Search halted, reason: Max number break'
 		$names > blacklist.txt
-		PeaceOfMind
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -188,7 +150,6 @@ function nameloop {
 		echo "Search skipped."
 		nameloop
 	}
-	
 	echo "Tested name = ""$name"""
 
 	$key00 = "null"
@@ -368,11 +329,13 @@ __*Stream Information*__
 		echo "Discord url = $url"
 	}
 	
-	echo "$twitch_username was found live on $date" >> livestreamlog.txt
-	$global:Pom = @('$old_name is LIVE on twitch!',
-					'Date: $date',
-					'Views: $views'
-					'VODs: $vod')
+	echo "$twitch_username was found live on $date" | Out-File -Append -Encoding Ascii "livestreamlog.txt"
+	$global:Pom = @("$old_name is LIVE on twitch!",
+					"Date: $date",
+					"Views: $views",
+					"VODs: $vod",
+					"-------------------------------O",
+					" ")
 	
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -381,37 +344,6 @@ __*Stream Information*__
 	SessionBlacklist
 	nameloop
 	}
-}
-
-function discord_msg {
-# v Discord Notification Message v
-$url = "$discord_webhook"
-$content00 = "**$old_name is LIVE on Twitch! $warning**" 
-$content01 = "Title: $title"
-$content02 = "Date found: $date" 
-$content03 = "Timestamp: $timestamp"
-$content04 = "Views: $views"
-$content05 = "VODs: $vod"
-$content06 = "Language: $lang"
-$content07 = "Come say hi! ---> https://www.twitch.tv/$twitch_username"
-$payload = [PSCustomObject]@{ 
-content = "$content00
--------------------------------------------------------O
-__*Stream Information*__
-- $content01
-- $content02
-- $content03
-- $content04
-- $content05
-- $content06
--------------------------------------------------------O
-- $content07 " } 
-# ^ Discord Notification Message ^
-}
-
-function PeaceOfMind {
-	$msg = 'No live streamers found in this lobby.'
-	if ($stream -ne "0") {$Pom | Out-file "PeaceOfMind.txt" -Encoding ASCII} else {$msg | Out-file "PeaceOfMind.txt" -Encoding ASCII}
 }
 
 function ignore_string {
@@ -495,15 +427,16 @@ function WinBallon { # Windows notification
 }
 
 function SessionBlacklist { # To prevent from repeadetely sending the same live stream notification
-	$d00 = get-date -format "dd"
+	$el_date = get-date -format "MM/dd/yy"
+	$d00 = "Date: $el_date"
 	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { # Check if file exists
-		$d00 > Session-Blacklist.txt
+		echo "$d00" | Out-File -Encoding Ascii "Session-Blacklist.txt"
 		write-host "Session blacklist created."
 	}
 	$session_blacklist = gc $p\Session-Blacklist.txt
 	$d01 = $session_blacklist | select -index 0
 	if (-not($d01 -eq $d00)) { # Check date
-		$d00 > Session-Blacklist.txt
+		echo "$d00"  | Out-File -Encoding Ascii "Session-Blacklist.txt"
 		write-host "Session blacklist expired, list reset done."
 		$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	}
@@ -513,7 +446,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	nameloop
 	}
 	if ($key00 -eq "blacklist") {
-	echo "$old_name" >> Session-Blacklist.txt
+	$Pom | Out-File -Append -Encoding Ascii "Session-Blacklist.txt"
 	write-host "$old_name has been added to the session blacklist"
 	}
 }
