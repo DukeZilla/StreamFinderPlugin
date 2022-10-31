@@ -1,11 +1,7 @@
 cd .. 
 $p = (pwd).path 
-$source = "https://github.com/DukeZilla/StreamFinderPlugin/archive/refs/heads/main.zip" 
-$destination = "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" 
-Invoke-WebRequest $source -OutFile $destination 
 cd \ 
 cd $env:USERPROFILE\Downloads 
-Expand-Archive -LiteralPath "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" -Force 
 cd StreamFinderPlugin 
 cd StreamFinderPlugin-main 
 cd data 
