@@ -40,7 +40,7 @@ void StreamFinderPlugin::onLoad()
 	string str02 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\streamfinder.bat\", 0";
 	string str03 = "wscript.quit";
 	ofstream outfile00;
-	outfile00.open("\\Windows\\Temp\\stream-finder.vbs");
+	outfile00.open("C:\\Windows\\Temp\\stream-finder.vbs");
 	outfile00 << str00 << endl;
 	outfile00 << str01 << endl;
 	outfile00 << str02 << endl;
@@ -53,7 +53,7 @@ void StreamFinderPlugin::onLoad()
 	string str06 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\"";
 	string str07 = "wscript.quit";
 	ofstream outfile01;
-	outfile01.open("\\Windows\\Temp\\directory.vbs");
+	outfile01.open("C:\\Windows\\Temp\\directory.vbs");
 	outfile01 << str04 << endl;
 	outfile01 << str05 << endl;
 	outfile01 << str06 << endl;
@@ -66,12 +66,38 @@ void StreamFinderPlugin::onLoad()
 	string str10 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\update.bat\", 0";
 	string str11 = "wscript.quit";
 	ofstream outfile02;
-	outfile02.open("\\Windows\\Temp\\update.vbs");
+	outfile02.open("C:\\Windows\\Temp\\update.vbs");
 	outfile02 << str08 << endl;
 	outfile02 << str09 << endl;
 	outfile02 << str10 << endl;
 	outfile02 << str11 << endl;
 	outfile02.close();
+
+	// For crash prevention
+	string str12 = "set shell = wscript.createobject(\"wscript.shell\")";
+	string str13 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
+	string str14 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\IfExistCheck.bat\", 0";
+	string str15 = "wscript.quit";
+	ofstream outfile03;
+	outfile03.open("C:\\Windows\\Temp\\IfExistCheck.vbs");
+	outfile03 << str12 << endl;
+	outfile03 << str13 << endl;
+	outfile03 << str14 << endl;
+	outfile03 << str15 << endl;
+	outfile03.close();
+
+	STARTUPINFO startupInfo;
+	PROCESS_INFORMATION pi;
+	memset(&startupInfo, 0, sizeof(STARTUPINFO));
+	startupInfo.cb = sizeof(STARTUPINFO);
+	startupInfo.wShowWindow = false;
+	// Get path for each computer, non-user specific and non-roaming data.
+	// Append product-specific path
+	TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\IfExistCheck.vbs""");
+	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
 
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
@@ -109,8 +135,9 @@ void StreamFinderPlugin::onLoad()
 void StreamFinderPlugin::LoadHooks()
 {
 gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of countdown
+gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::ClearList, this, std::placeholders::_1)); // End of game
 //gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.StartRound", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of kickoff
-//gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // State of joining a game
+gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::ClearList, this, std::placeholders::_1)); // State of joining a game
 //gameWrapper->HookEvent("Function GameEvent_Soccar_TA.ReplayPlayback.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of goal replay
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnOvertimeUpdated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of overtime
 //gameWrapper->HookEvent("Function TAGame.GameEvent_TA.AddCar", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1)); // Called when a car spawns
@@ -155,12 +182,18 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 	startupInfo.wShowWindow = false;
 	// Get path for each computer, non-user specific and non-roaming data.
 	// Append product-specific path
-	TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\stream-finder.vbs""");
+	TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\stream-finder.vbs""");
 	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	cvarManager->log("Stream Detector Launched.");
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
+}
+
+void StreamFinderPlugin::ClearList(std::string eventName)
+{
+	std::ofstream bl(gameWrapper->GetDataFolder() / "StreamFinder" / "blacklist.txt");
+	bl << " " << std::endl;
 }
 
 void StreamFinderPlugin::HandleMainMenu(std::string eventName)
