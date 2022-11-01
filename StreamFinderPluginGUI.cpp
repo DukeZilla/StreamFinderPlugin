@@ -77,7 +77,9 @@ void StreamFinderPlugin::RenderSettings() {
     UpdateNotif();
 
     ImGui::TextUnformatted("------------------------------------------------------O");
-    ImGui::TextUnformatted("Plugin made by P as in Papi | Special thanks to the bakkesmod programming community for help!");
+    ImGui::TextUnformatted("Plugin made by P as in Papi   |");
+    ImGui::SameLine();
+    Credits();
 }
 
 /// <summary>
@@ -120,6 +122,32 @@ void StreamFinderPlugin::UpdateNotif()
     }
 }
 
+void StreamFinderPlugin::Credits()
+{
+    if (ImGui::Button("Credits", ImVec2(0, 0))) {
+        ImGui::OpenPopup("Credits");
+    }
+
+    if (ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::BulletText("Testers:");
+        ImGui::Text("BumpoTheClown, Unlivedmetal \n"
+            "FourEyesOptic, Daboodeedabodah, \n"
+            "Sinan Enginist, FreezerBurn_33, \n"
+            "QS3V3N, GettusRektus, and Turtle.");
+        ImGui::Separator();
+        ImGui::BulletText("Big thanks to:");
+        ImGui::Text("JerryTheBee, Vync, \n"
+            "ItsBrank, Martinn, eightfold \n"
+            "and the rest of the bakkesmod programming community \n"
+            "for help!");
+        if (ImGui::Button("Close", ImVec2(320, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
+
 void StreamFinderPlugin::DiscSaveNotif()
 {
     if (ImGui::Button("Save Changes", ImVec2(0, 0))) {
@@ -132,7 +160,7 @@ void StreamFinderPlugin::DiscSaveNotif()
     if (ImGui::BeginPopupModal("Discord Webhook", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Webhook saved!");
-        if (ImGui::Button("Okay.", ImVec2(142, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(130, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -308,7 +336,7 @@ void StreamFinderPlugin::renderWebhookTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("DISCORD WEBHOOK LINK");
         ImGui::Separator();
-        ImGui::TextUnformatted("To receive notifications of live streamers, create a channel webhook and paste it here:");
+        ImGui::TextUnformatted("To receive notifications of live streamers, on Discord, create a channel webhook and paste it here:");
         ImGui::InputText("###Link", bufferBoi, _countof(bufferBoi));
         DiscSaveNotif();
         ImGui::SameLine();
@@ -343,7 +371,7 @@ void StreamFinderPlugin::renderBlacklistsTab() {
         if (ImGui::CollapsingHeader("Blacklist", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Current Lobby"), 0);
             ImGui::GetStateStorage()->SetInt(ImGui::GetID("Blacklist"), 1);
-            ImGui::TextUnformatted("Enter names of players you wish to be permanently blacklisted here.");
+            ImGui::TextUnformatted("Enter names of players you wish to be permanently blacklisted here. (Must be exactly the same as display name)");
             ImGui::Separator();
             ImGui::InputTextMultiline("###List", buffer00, _countof(buffer00));
             ListSaveNotif();
@@ -369,7 +397,7 @@ void StreamFinderPlugin::renderBlacklistsTab() {
             ImGui::Text("BLACKLIST INFO:");
             ImGui::BulletText("- Information on blacklists -");
             ImGui::BulletText("Permanent Blacklist: Whatever names are included in this list will be completely ignored by the program indefinitely,.");
-            ImGui::BulletText("Be sure the names are typed exactly the same as the projected RL name.");
+            ImGui::BulletText("Be sure the names are typed exactly the same as the name you see on their nameplate.");
             ImGui::BulletText("The \"Current Lobby\" list refreshes everytime you toggle the GUI, or by pressing the refresh button.");
             ImGui::BulletText("Side note: All bot names have been blacklisted by default to prevent false positives.");
             ImGui::Separator();
@@ -383,10 +411,11 @@ void StreamFinderPlugin::renderExtrasTab() {
     if (ImGui::BeginTabItem("Logging")) {
         ImGui::Separator();
         
-        if (ImGui::Button("Refresh All")) {
+        if (ImGui::Button("Refresh logs")) {
             buffer02.clear();
             buffer03.clear();
             buffer04.clear();
+
             livelogbufferfunc();
             notlivelogbufferfunc();
             streamlogbufferfunc();
@@ -403,6 +432,7 @@ void StreamFinderPlugin::renderExtrasTab() {
         ImGui::Separator();
 
         if (ImGui::CollapsingHeader("Stream Finder Logs", ImGuiTreeNodeFlags_DefaultOpen)) {
+
             // Titles
             ImGui::Columns(3, "Columns");
             ImGui::Separator();
@@ -489,11 +519,12 @@ void StreamFinderPlugin::OnOpen()
     buffer04.clear();
 
     discbufferfunc();
+    permabufferfunc();
+    tempbufferfunc();
+
     livelogbufferfunc();
     notlivelogbufferfunc();
     streamlogbufferfunc();
-    permabufferfunc();
-    tempbufferfunc();
 	
     isWindowOpen_ = true;
 }
