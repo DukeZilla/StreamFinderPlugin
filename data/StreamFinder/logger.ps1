@@ -1,8 +1,11 @@
+# ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
+# By P as in Papi
+
+echo "Stream Finder Logger | Version 0.95"
+
 Import-Module C:Twitch-Token.psm1
 $p = (pwd).path
 $i = -1
-
-echo "Stream Finder Logger | Version 0.95"
 
 function lobbylog {
 	$i++
