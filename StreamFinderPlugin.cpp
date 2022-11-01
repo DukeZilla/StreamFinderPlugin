@@ -22,12 +22,12 @@ void StreamFinderPlugin::onLoad()
 {
 	_globalCvarManager = cvarManager;
 	cvarManager->log("Hello I'm CoolPlugin B)");
-	cvarManager->registerCvar("stream_finder_enabled", "0", "Enable Plugin", true, true, 0, true, 1)
+	cvarManager->registerCvar("stream_finder_enabled", "1", "Enable Plugin", true, true, 0, true, 1)
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
 		StreamFinderEnabled = cvar.getBoolValue();
 			});
 	cvarManager->log("Stream Finder Plugin loaded!");
-	//gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "streamfinder.png");
+	//gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "StreamFinder" / "stream_finder_icon.png");
 	cvarManager->registerNotifier("sf_toast", [this](std::vector<std::string> args) {
 	gameWrapper->Toast("Stream Finder Plugin", "Plugin is active!", "sfimg", 5.0, ToastType_OK);
 	}, "", PERMISSION_ALL);
