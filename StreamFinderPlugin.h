@@ -45,6 +45,7 @@ public:
 
 	//void LaunchQuickNoteModal();
 	void HandleGameStart(std::string eventName);
+	void ClearList(std::string eventName);
 	void HandleMainMenu(std::string eventName);
 	//void HandlePlayerAdded(std::string eventName);
 
@@ -67,17 +68,26 @@ public:
 
 private:
 
+	// Tabs
 	void renderWebhookTab();
 	void renderBlacklistsTab();
 	void renderExtrasTab();
+
+	// Buffer functions
 	void discbufferfunc();
 	void permabufferfunc();
 	void tempbufferfunc();
-	void logbufferfunc();
+	void livelogbufferfunc();
+	void notlivelogbufferfunc();
+	void streamlogbufferfunc();
+
+	// Buttons
 	void UpdateNotif();
 	void DiscSaveNotif();
 	void ListSaveNotif();
 	void HookTestNotif();
+	void Credits();
+	
 	void Log(std::string msg);
 	bool isWindowOpen = false;
 	bool shouldBlockInput = false;
