@@ -334,7 +334,7 @@ __*Stream Information*__
 					"Date: $date",
 					"Views: $views",
 					"VODs: $vod",
-					"-------------------------------O",
+					"------------------------------------------------------------O",
 					" ")
 	
 	echo "Searched $old_name"
