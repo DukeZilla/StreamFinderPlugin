@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <fstream>
 #include <iostream>
+#include <string>
 #include "StreamFinderPlugin.h"
 #include <string.h>
 #include <tchar.h>
@@ -10,10 +11,16 @@
 using namespace std;
 
 // Plugin Settings Window code here
+
+// Buffers
 static char bufferBoi[1024]; // For the discord webhook
 static char buffer00[1024]; // For the Permanent blacklist
 static char buffer01[1024]; // For the Lobby list
-static char buffer02[1024]; // For the log file
+
+// For reading powershell output
+static inline std::string buffer02{}; // Not live
+static inline std::string buffer03{}; // Player is live
+static inline std::string buffer04{}; // All live streamers caught
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return pluginNiceName_;
@@ -29,7 +36,7 @@ std::string StreamFinderPlugin::GetPluginName() {
 ////////////////////////
 
 void StreamFinderPlugin::RenderSettings() {
-    ImGui::TextUnformatted("PRE-ALPHA Version 0.96 | This plugin is still under development.");
+    ImGui::TextUnformatted("Plugin Version 0.99 | Project is almost finished!!!");
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 	if (!enableCvar) {
 		return;
@@ -96,7 +103,7 @@ void StreamFinderPlugin::UpdateNotif()
             startupInfo.wShowWindow = false;
             // Get path for each computer, non-user specific and non-roaming data.
             // Append product-specific path
-            TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\update.vbs""");
+            TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\update.vbs""");
             CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
@@ -125,7 +132,7 @@ void StreamFinderPlugin::DiscSaveNotif()
     if (ImGui::BeginPopupModal("Discord Webhook", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Webhook saved!");
-        if (ImGui::Button("Okay.", ImVec2(135, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(142, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -164,7 +171,7 @@ void StreamFinderPlugin::HookTestNotif()
         startupInfo.wShowWindow = false;
         // Get path for each computer, non-user specific and non-roaming data.
         // Append product-specific path
-        TCHAR tcsCommandLine[] = _T("start ""\\Windows\\Temp\\stream-finder.vbs""");
+        TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\stream-finder.vbs""");
         CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
@@ -235,22 +242,61 @@ void StreamFinderPlugin::tempbufferfunc() // Used for the "Current Lobby List"
     temp.close();
 }
 
-void StreamFinderPlugin::logbufferfunc() // Used for the peace of mind feature
+void StreamFinderPlugin::notlivelogbufferfunc()
 {
-    std::string line02;
-    std::string logstring;
-    std::ifstream logstrm(gameWrapper->GetDataFolder() / "StreamFinder" / "PeaceOfMind.json");
-    while (getline(logstrm, line02))
-    {
-        if (line02.empty()) {
-            break;
-        }
-        logstring += line02 + '\n';
-    }
-    // do outside of render func
-    memset(&buffer02, 0, _countof(buffer02)); // init char array
-    strncpy_s(buffer02, logstring.c_str(), _countof(buffer02)); // print text to the array/buffer
+    auto logpath = gameWrapper->GetDataFolder() / "StreamFinder" / "PeaceOfMind.txt";
+    std::ifstream logstrm(logpath, std::ios::binary);
+    logstrm.unsetf(std::ios::skipws);
+
+    std::streampos size;
+
+    logstrm.seekg(0, std::ios::end);
+    size = logstrm.tellg();
+    logstrm.seekg(0, std::ios::beg);
+
+    std::istream_iterator<char> start(logstrm), end;
+    buffer02.reserve(size);
+    buffer02.insert(buffer02.cbegin(), start, end);
+
     logstrm.close();
+}
+
+void StreamFinderPlugin::livelogbufferfunc()
+{
+    auto logpath01 = gameWrapper->GetDataFolder() / "StreamFinder" / "Session-Blacklist.txt";
+    std::ifstream logstrm01(logpath01, std::ios::binary);
+    logstrm01.unsetf(std::ios::skipws);
+
+    std::streampos size01;
+
+    logstrm01.seekg(0, std::ios::end);
+    size01 = logstrm01.tellg();
+    logstrm01.seekg(0, std::ios::beg);
+
+    std::istream_iterator<char> start(logstrm01), end;
+    buffer03.reserve(size01);
+    buffer03.insert(buffer03.cbegin(), start, end);
+
+    logstrm01.close();
+}
+
+void StreamFinderPlugin::streamlogbufferfunc()
+{
+    auto logpath02 = gameWrapper->GetDataFolder() / "StreamFinder" / "livestreamlog.txt";
+    std::ifstream logstrm02(logpath02, std::ios::binary);
+    logstrm02.unsetf(std::ios::skipws);
+
+    std::streampos size02;
+
+    logstrm02.seekg(0, std::ios::end);
+    size02 = logstrm02.tellg();
+    logstrm02.seekg(0, std::ios::beg);
+
+    std::istream_iterator<char> start(logstrm02), end;
+    buffer04.reserve(size02);
+    buffer04.insert(buffer04.cbegin(), start, end);
+
+    logstrm02.close();
 }
 
 /// <summary>
@@ -334,15 +380,18 @@ void StreamFinderPlugin::renderBlacklistsTab() {
 }
 
 void StreamFinderPlugin::renderExtrasTab() {
-    if (ImGui::BeginTabItem("Misc")) {
+    if (ImGui::BeginTabItem("Logging")) {
         ImGui::Separator();
-        ImGui::TextUnformatted("MISC");
-        ImGui::Separator();
-        ImGui::TextUnformatted("Current Stream Finder Log:");
-        ImGui::TextUnformatted("Streamers who were found will be logged here.");
-        ImGui::InputTextMultiline("###Misc", buffer02, _countof(buffer02));
-        ImGui::Separator();
-
+        
+        if (ImGui::Button("Refresh All")) {
+            buffer02.clear();
+            buffer03.clear();
+            buffer04.clear();
+            livelogbufferfunc();
+            notlivelogbufferfunc();
+            streamlogbufferfunc();
+        }
+        ImGui::SameLine();
         if (ImGui::Button("Open Stream Finder Folder")) {
             system("C:\\Windows\\Temp\\directory.vbs");
         }
@@ -353,16 +402,26 @@ void StreamFinderPlugin::renderExtrasTab() {
 
         ImGui::Separator();
 
-        if (ImGui::CollapsingHeader("Help")) {
-            ImGui::Text("STREAM FINDER 101");
+        if (ImGui::CollapsingHeader("Stream Finder Logs", ImGuiTreeNodeFlags_DefaultOpen)) {
+            // Titles
+            ImGui::Columns(3, "Columns");
             ImGui::Separator();
-            ImGui::Text("MISC:");
-            ImGui::BulletText("The program will also log all the stream finding events in a text file: \"livestreamlog.txt\"");
-            ImGui::BulletText("If you ever want to see the stream finder folder you can click the button above."); \
-            ImGui::BulletText("If there are any bugs please sumbit a ticket on the stream finder github page!");
-            //ImGui::BulletText("You may also modify the sound effect, be sure the sound file name is modified in \"sound.vbs\"");
+            ImGui::Text("All Streamers Caught"); ImGui::NextColumn();
+            ImGui::Text("Current Lobby Status"); ImGui::NextColumn();
+            ImGui::Text("Streamers Caught Today"); ImGui::NextColumn();
+            ImGui::Separator();
+
+            // All Stream
+            ImGui::Text("%s", buffer04.c_str()); ImGui::NextColumn();
+
+            // Current lobby
+            ImGui::Text("%s", buffer02.c_str()); ImGui::NextColumn();
+
+            // Today
+            ImGui::Text("%s", buffer03.c_str()); ImGui::NextColumn();
             ImGui::Separator();
         }
+
 
         ImGui::EndTabItem();
     }
@@ -376,8 +435,8 @@ void StreamFinderPlugin::Render()
 	if (ImGui::Begin(pluginNiceName_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None)) {
         if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
             ImGui::TextUnformatted("Stream Finder Settings");
-            renderBlacklistsTab();
             renderWebhookTab();
+            renderBlacklistsTab();
             renderExtrasTab();
             ImGui::EndTabBar();
         }
@@ -425,11 +484,18 @@ bool StreamFinderPlugin::IsActiveOverlay()
 // Called when window is opened
 void StreamFinderPlugin::OnOpen()
 {
+    buffer02.clear();
+    buffer03.clear();
+    buffer04.clear();
+
     discbufferfunc();
-    logbufferfunc();
+    livelogbufferfunc();
+    notlivelogbufferfunc();
+    streamlogbufferfunc();
     permabufferfunc();
     tempbufferfunc();
-	isWindowOpen_ = true;
+	
+    isWindowOpen_ = true;
 }
 
 // Called when window is closed
