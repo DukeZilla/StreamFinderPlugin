@@ -2,6 +2,8 @@ Import-Module C:Twitch-Token.psm1
 $p = (pwd).path
 $i = -1
 
+echo "Stream Finder Logger | Version 0.95"
+
 function lobbylog {
 	$i++
 	
@@ -89,6 +91,13 @@ function lobbylog {
 	$id = (ConvertFrom-Json ($requestRAW03)).Data | select -expandproperty id
 	if ($null -eq $id) {
 	echo "$old_name has no twitch channel found" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	lobbylog
+	}
+	
+	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/search/channels?query=$specChar" # Searching the player's name through twitch database
+	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"} # Determining whether streamer is live or not
+	if ($live_status -like "*True*") { # Stream information management function | Discord webhook operations
+	echo "$old_name is LIVE on Twitch!" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
 	lobbylog
 	}
 	
