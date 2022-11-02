@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.50"
+echo "Stream Finder | Detector Version 1.51"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -95,6 +95,7 @@ function nameloop {
 	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
+	if ($old_name -eq "Search-Request") {nameloop}
 	
 	echo "----------------------------------------------------------0"
 	echo "Instance #$i"
@@ -150,6 +151,7 @@ function nameloop {
 		echo "Search skipped."
 		nameloop
 	}
+	
 	echo "Tested name = ""$name"""
 
 	$key00 = "null"
@@ -191,6 +193,7 @@ function nameloop {
 	if ($old_name -like "*live*") {$pass = "rocket"}
 	if ($old_name -like "*tv*") {$pass = "rocket"}
 	if ($old_name -like "*ttv*") {$pass = "rocket"}
+	if ($names -contains "Search-Request") {$pass = "rocket"}
 	
 	if ($pass -eq "rocket") { # Peace of mind notification
 	Add-Type -AssemblyName System.Windows.Forms
