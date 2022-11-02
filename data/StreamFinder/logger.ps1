@@ -1,7 +1,7 @@
 # COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder Logger | Version 0.95"
+echo "Stream Finder Logger | Version 0.96"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -103,16 +103,14 @@ function lobbylog {
 	if ($live_status -like "*True*") { # Stream information management function | Discord webhook operations
 	echo "$old_name is LIVE on Twitch!" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
 	lobbylog
-	}
-	
-	$requestRAW04 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/videos?user_id=$id"
-	$json_request = (ConvertFrom-Json ($requestRAW04)).Data | select -expandproperty published_at
-	$last_live = $json_request | select -index 0
-	if ($null -eq $last_live) {
-	echo "$old_name is not live" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	} else {
+	echo "$old_name is not live on twitch." | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
 	lobbylog
 	}
 
+	$requestRAW04 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/videos?user_id=$id"
+	$json_request = (ConvertFrom-Json ($requestRAW04)).Data | select -expandproperty published_at
+	$last_live = $json_request | select -index 0
 	$date_now = [DateTime]::UtcNow
 	$time_sum = [datetime]$date_now -[datetime]$last_live
 	$tD = $time_sum | select -expandproperty days
