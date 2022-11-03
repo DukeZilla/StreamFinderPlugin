@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.51"
+echo "Stream Finder | Detector Version 1.52"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -24,6 +24,10 @@ $balmsg.ShowBalloonTip(60000)
 
 
 function Test_Webhook { # For testing the discord webhook
+if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
+	webhook_error
+	exit}
+
 $trim02 = get-date | out-string 
 $date = $trim02.trim('')
 
@@ -59,8 +63,6 @@ del $p\test-webhook.txt
 exit
 }
 
-if ($test -eq "Test-Webhook") {Test_Webhook}
-
 function webhook_error {
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
@@ -72,6 +74,8 @@ $balmsg.BalloonTipTitle = "Stream Finder Plugin Error"
 $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
 }
+
+if ($test -eq "Test-Webhook") {Test_Webhook}
 
 echo "Stream search beginning."
 $global:stream = 0
