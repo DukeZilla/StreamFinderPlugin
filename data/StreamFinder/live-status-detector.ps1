@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.52"
+echo "Stream Finder | Detector Version 1.53"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -336,9 +336,11 @@ __*Stream Information*__
 		echo "Discord url = $url"
 	}
 	
+	$el_time = get-date -format "t"
+	
 	echo "$twitch_username was found live on $date" | Out-File -Append -Encoding Ascii "livestreamlog.txt"
 	$global:Pom = @("$old_name is LIVE on twitch!",
-					"Date: $date",
+					"Time found: $el_time",
 					"Views: $views",
 					"VODs: $vod",
 					"------------------------------------------------------------O",
