@@ -9,6 +9,18 @@ goto main
 title Stream Finder Plugin Updater V1.0
 @echo off
 cls
+color 5
+echo    _____ __                               _______           __         
+echo   / ___// /_________  ____ _____ ___     / ____(_)___  ____/ /__  _____
+echo   \__ \/ __/ ___/ _ \/ __ `/ __ `__ \   / /_  / / __ \/ __  / _ \/ ___/
+echo  ___/ / /_/ /  /  __/ /_/ / / / / / /  / __/ / / / / / /_/ /  __/ /    
+echo /____/\__/_/   \___/\__,_/_/ /_/ /_/  /_/   /_/_/ /_/\__,_/\___/_/  
+echo.
+echo -----------------------------------------------------------------------------------O
+echo.
+echo By P as in Papi
+echo.
+echo.
 
 ( echo function start_notif {
   echo Add-Type -AssemblyName System.Windows.Forms
