@@ -71,6 +71,7 @@ private:
 	// Tabs
 	void renderWebhookTab();
 	void renderBlacklistsTab();
+	void renderLoggingTab();
 	void renderExtrasTab();
 
 	// Buffer functions
@@ -86,6 +87,7 @@ private:
 	void DiscSaveNotif();
 	void ListSaveNotif();
 	void HookTestNotif();
+	void SearchButton();
 	void Credits();
 	
 	void Log(std::string msg);
