@@ -10,5 +10,4 @@ title Stream Finder Plugin
 @echo off
 cls
 powershell.exe -executionpolicy bypass -f "logger.ps1"
-pause
 exit
