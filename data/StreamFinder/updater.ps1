@@ -1,3 +1,9 @@
+$rl = (get-process -name RocketLeague).path -erroraction silentlycontinue
+kill -name RocketLeague -Force -erroraction silentlycontinue
+if (get-process -name steam) {
+	$steam = (get-process -name steam).path -erroraction silentlycontinue
+	kill -name Steam -force
+	}
 cd .. 
 cd ..
 $p = (pwd).path 
@@ -32,4 +38,6 @@ $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
 }
 update_notif
+if ($null -ne $steam) {start-process $steam} -erroraction silentlycontinue
+if ($null -ne $rl) {start-process $rl} -erroraction silentlycontinue
 exit 
