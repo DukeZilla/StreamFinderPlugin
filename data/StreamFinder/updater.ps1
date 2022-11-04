@@ -4,6 +4,7 @@ if (get-process -name steam) {
 	$steam = (get-process -name steam -erroraction silentlycontinue).path
 	kill -name Steam -force
 	}
+sleep 1
 cd .. 
 cd ..
 $p = (pwd).path 
