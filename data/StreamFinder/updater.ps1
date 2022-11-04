@@ -1,4 +1,5 @@
 cd .. 
+cd ..
 $p = (pwd).path 
 cd \ 
 cd $env:USERPROFILE\Downloads 
@@ -6,13 +7,16 @@ cd StreamFinderPlugin
 cd StreamFinderPlugin-main 
 cd data 
 cd StreamFinder 
-copy "live-status-detector.ps1" "$p\StreamFinder" 
-copy "logger.ps1" "$p\StreamFinder" 
-copy "log.bat" "$p\StreamFinder"
-copy "IfExistCheck.bat" "$p\StreamFinder"
-copy "Twitch-Token.psm1" "$p\StreamFinder"
-copy "update.bat" "$p\StreamFinder" 
-copy "streamfinder.bat" "$p\StreamFinder" 
+copy "live-status-detector.ps1" "$p\data\StreamFinder" 
+copy "logger.ps1" "$p\data\StreamFinder" 
+copy "log.bat" "$p\data\StreamFinder"
+copy "IfExistCheck.bat" "$p\data\StreamFinder"
+copy "Twitch-Token.psm1" "$p\data\StreamFinder"
+copy "update.bat" "$p\data\StreamFinder"
+cd ..
+cd ..
+cd Plugins
+copy "StreamFinderPlugin.dll" "$p\plugins"
 cd $env:USERPROFILE\Downloads 
 rmdir StreamFinderPlugin -Recurse -Force
 del StreamFinderPlugin.zip 
