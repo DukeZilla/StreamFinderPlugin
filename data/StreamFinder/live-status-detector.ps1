@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.53"
+echo "Stream Finder | Detector Version 1.54"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -21,7 +21,6 @@ $balmsg.BalloonTipTitle = "Stream Finder Plugin"
 $balmsg.Visible = $true
 $balmsg.ShowBalloonTip(60000)
 }
-
 
 function Test_Webhook { # For testing the discord webhook
 if ($discord_webhook -eq "*INSERT DISCORD WEBHOOK HERE*") {
@@ -110,6 +109,7 @@ function nameloop {
 		echo "Search halted, reason: null value break"
 		echo "Reached the end of name list."
 		$names > blacklist.txt
+		$names > blacklist-log.txt
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -135,6 +135,7 @@ function nameloop {
 	if ($i -eq  10) { # to prevent from looping more than necessary
 		echo 'Search halted, reason: Max number break'
 		$names > blacklist.txt
+		$names > blacklist-log.txt
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -343,8 +344,7 @@ __*Stream Information*__
 					"Time found: $el_time",
 					"Views: $views",
 					"VODs: $vod",
-					"------------------------------------------------------------O",
-					" ")
+					"------------------------------------------------------------O")
 	
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -449,7 +449,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 		write-host "Session blacklist expired, list reset done."
 		$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	}
-	if ($session_blacklist -contains $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
+	if ($session_blacklist -match $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
 	echo "Player: $old_name will be blacklisted until tomorrow"
 	echo "Search skipped."
 	nameloop
