@@ -1,7 +1,7 @@
 # COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder Logger | Version 0.96"
+echo "Stream Finder Logger | Version 0.97"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -16,7 +16,7 @@ function lobbylog {
 	$botlist = gc $p\botlist.txt
 	$old_name = $names | select -index $i
 	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
-	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
+	$blacklist = gc $p\blacklist-log.txt -erroraction silentlycontinue
 	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
 	
