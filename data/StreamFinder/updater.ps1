@@ -12,6 +12,7 @@ copy "log.bat" "$p\StreamFinder"
 copy "IfExistCheck.bat" "$p\StreamFinder"
 copy "Twitch-Token.psm1" "$p\StreamFinder"
 copy "update.bat" "$p\StreamFinder" 
+copy "streamfinder.bat" "$p\StreamFinder" 
 cd $env:USERPROFILE\Downloads 
 rmdir StreamFinderPlugin -Recurse -Force
 del StreamFinderPlugin.zip 
