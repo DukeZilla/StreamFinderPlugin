@@ -27,6 +27,10 @@ copy "StreamFinderPlugin.dll" "$p\plugins"
 cd $env:USERPROFILE\Downloads 
 rmdir StreamFinderPlugin -Recurse -Force
 del StreamFinderPlugin.zip 
+cd "$p\data\StreamFinder"
+if (-not(gc livestreamlog.txt -erroraction silentlycontinue)) {echo " " | Out-File -Append -Encoding Ascii "livestreamlog.txt"}
+if (-not(gc Session-blacklist.txt -erroraction silentlycontinue)) {echo " " | Out-File -Append -Encoding Ascii "Session-blacklist.txt"}
+if (-not(gc PeaceOfMind.txt -erroraction silentlycontinue)) {echo " " | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"}
 function update_notif {
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
