@@ -48,7 +48,7 @@ $accessToken = Get-TwitchAccessToken
 $authHeadTwitch = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
 $authHeadTwitch = @{}
 $authHeadTwitch.Add("Authorization","Bearer "+$accessToken.accesstoken)
-$authHeadTwitch.Add("Client-ID", "4xeemdr46tyggrk8nuwmcw1l44ln63")
+$authHeadTwitch.Add("Client-ID", $Value03)
 return $authHeadTwitch
 }
 
