@@ -5,9 +5,31 @@ cls
 goto main
 
 :main
-IF EXIST PeaceOfMind.txt (echo "Pom Exists") else (echo " " >> PeaceOfMind.txt)
-IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo " " >> Session-Blacklist.txt)
-IF EXIST livestreamlog.txt (echo "Log Exists") else (echo " " >> livestreamlog.txt)
-IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo "None." >> streamlink-session.txt)
+:: Text Files
+IF EXIST PeaceOfMind.txt (echo "Pom Exists") else (echo For logging >> PeaceOfMind.txt)
+IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found today will be logged here >> Session-Blacklist.txt)
+IF EXIST livestreamlog.txt (echo "Log Exists") else (echo Live Streamers Will be logged here. >> livestreamlog.txt)
+IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo None. >> streamlink-session.txt)
+
+:: VBS Files
+IF EXIST stream-finder.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > stream-finder.vbs
+	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> stream-finder.vbs
+	echo file = Chr(34^) & appData & "\bakkesmod\bakkesmod\data\StreamFinder\streamfinder.bat" & Chr(34^) >> stream-finder.vbs
+	echo shell.run file, 0 >> stream-finder.vbs
+	echo wscript.quit >> stream-finder.vbs
+	)
+
+IF EXIST record.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > record.vbs
+	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> record.vbs
+	echo file = Chr(34^) & appData & "\bakkesmod\bakkesmod\data\StreamFinder\Streamlink-Recorder.bat" & Chr(34^) >> record.vbs
+	echo shell.run file, 0 >> record.vbs
+	echo wscript.quit >> record.vbs
+	)
+	
+IF EXIST stop-recording.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > stop-recording.vbs
+	echo shell.run "taskkill /im streamlink.exe -f", 0 >> stop-recording.vbs
+	echo wscript.quit >> stop-recording.vbs
+	)
+
 taskkill /im cmd.exe -f
 exit
