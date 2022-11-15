@@ -7,6 +7,12 @@ Import-Module C:Twitch-Token.psm1
 
 # Discord webhook linke to variable
 $p = (pwd).path
+cd $env:APPDATA
+cd ..
+cd "Local\Streamlink\bin"
+$global:streamlink_path = (pwd).path
+cd $p
+
 $discord_webhook = gc $p\discord-webhook.txt
 $test = gc $p\test-webhook.txt -erroraction silentlycontinue
 
@@ -285,6 +291,7 @@ function streamsearch { # The stream finder itself
 	$twitch_username = $trim00.trim('')
 	$trim02 = get-date | out-string # Log file
 	$date = $trim02.trim('')
+	$short_date = get-date -format "MM/dd/yyyy hh:mm:ss"
 	echo "Player $old_name's twitch username => $twitch_username"
 	
 	# Additional Stream info for discord notification
@@ -298,7 +305,7 @@ function streamsearch { # The stream finder itself
 	
 	if ("" -eq $vod_check) {
 		$vod = "False"
-		$warning = "Hurry in!"
+		$warning = "HURRY IN!"
 	} else {
 		$vod = "True"
 		$warning = ""
@@ -345,7 +352,25 @@ __*Stream Information*__
 					"Views: $views",
 					"VODs: $vod",
 					"------------------------------------------------------------O")
+					
+	# create function for streamlink
 	
+	if (gc $streamlink_path\streamlink.exe) {
+	# Streamlink info
+	echo "TwitchUsr=$twitch_username" | Out-File -Encoding Ascii "streamlink-info.txt"
+	echo "TwitchLink=https://www.twitch.tv/$twitch_username" | Out-File -Append -Encoding Ascii "streamlink-info.txt"
+	
+	# Special Ses text
+	echo "$twitch_username" | Out-File -Encoding Ascii "streamlink-session.txt"
+	echo "Date: $short_date" | Out-File -Append -Encoding Ascii "streamlink-session.txt"
+	echo "VODs: $vod" | Out-File -Append -Encoding Ascii "streamlink-session.txt"
+	
+	# Start Streamlink
+	start-process record.vbs
+	write-host "STREAMLINK RECORDING STARTED"
+	}
+	
+	#End
 	echo "Searched $old_name"
 	echo "=-=-=-=-=-=-=-=-=-=-=-=-=-="
 	echo "Search on $old_name has been terminated."

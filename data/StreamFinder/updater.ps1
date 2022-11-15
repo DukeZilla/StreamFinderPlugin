@@ -20,6 +20,10 @@ copy "log.bat" "$p\data\StreamFinder"
 copy "IfExistCheck.bat" "$p\data\StreamFinder"
 copy "Twitch-Token.psm1" "$p\data\StreamFinder"
 copy "update.bat" "$p\data\StreamFinder"
+copy "Streamlink-Recorder.bat" "$p\data\StreamFinder"
+copy "stream_finder_icon.png" "$p\data\StreamFinder"
+copy "FileCheck.vbs" "$p\data\StreamFinder"
+copy "View-Recording.bat" "$p\data\StreamFinder"
 cd ..
 cd ..
 cd Plugins
