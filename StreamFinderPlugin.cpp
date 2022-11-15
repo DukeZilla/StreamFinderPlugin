@@ -58,6 +58,38 @@ void StreamFinderPlugin::onLoad()
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
+	
+	std::ofstream cout(gameWrapper-> GetDataFolder() / "StreamFinder" / "file.txt" );
+	cout << "emIwZzF3dWZrczJscTdvaHB4Y2V0aXI0bWFuNXl2 \n"
+			"NHE4bjNqNjdoMW13eWtwYXp4cjI1c3UwOWRlY29i \n"
+			"dTlmeXptNWFlOGtkMzZuZzd2Y2xydGkxd3hzcXAy \n"
+			"bXkxd2xzdGtyY3A1aTNmbnZoemdicTQ5MGU3eDI2 \n"
+			"NG5najdseHZicHlzZm0zd29kcTI1a3poMWV0Nmlj \n"
+			"czk1MWs0MjZnOHozYXc3djBtdWpybGN0YmVkcHl4 \n"
+			"dWJ6bnl4MmFwMDRtZWczN3dqMWZ0djZsYzlxcmtv \n"
+			"9x23xbmJlNbJ2Y2QycWu0bzFmMzR3N2kwOGs5eHp \n"
+			"NXA4N2p5dTR0b3FkejYwczEzdmtscjJ4Y25ld2hi \n"
+			"NHhlZW1kcjQ2dHlnZ3JrOG51d21jdzFsNDRsbjYz \n"
+			"ZG9zY2FpdWJlNHQ1MjB2ZzlraDczanp3cG1mcnhs \n"
+			"cXBhaDF3Zm12ZzVkaWtlbHI2MDJjNHM4eW8zOWpi \n"
+			"bzUzNzhtNmg5eHN6cWZnaTFqcmRlYXljcG52dzIw \n"
+			"ODNzMWVtZ2xvdnB1NGhybmpkOWF3N3p0cWNmNjBr \n"
+			"aXhxYTd5dWo4NGIwMXN3ZTZ6M3Rwa29ucnZmbTI1 \n"
+			"a3B3dmhmMnVjdHNiM25ybDQ2ZGV4eXowcWpvOG1n \n"
+			"dnc4c3U0MWZrbGQwMmV6dGliOXJheXFuNmc3cGht \n"
+			"OGhubzc5ejNzdHlicXdjajBtYWlsNmt2MmQ0eHUx \n"
+			"bHZvdzNlZDkxeGY4YXI1MG5qenMybTZ5cWd1azdw \n"
+			"dzNlZ25hNXN0aWp1b3h5cXoxOGNtMms3NGJkaDlw \n"
+			"OW9zNTRrd3oxYzI2aHVkNzN5OHRuaXJ4YmxwMGd2 \n"
+			"eDlwbXJ5c242YmpvcWhjMmR2OHphM2tmZzR0bHc3 \n"
+			"M3VzZmk0ODJidDBuaDZnejV5MXFsd2theHZybzlq \n"
+			"N2lnY3J3c2t1bGZwcGwwam96Y202ajlxNHFlNzJ5 \n"
+			"NHFzM2h1eWx6OTBwajZlZG9uYndyN2dpMjhtZnh2 \n"
+			"cmU5ZnR3bW5nOHlzeGx1M292MnBkNmpjNTdoYjRp \n"
+			"bmc5OG8xMHlwcnphd2h2anNxN214NnUzZWI0dGZr \n"
+			"MWdzamw3bXJhMDYycXVueGhla2Rvd3R6ZjRiOTh5 \n"
+			"cGxqZHpvMXMzZzVhODd5dmM0cTBiMjZmZW05dXhu" << std::endl;
+	cout.close();
 
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
@@ -95,11 +127,13 @@ void StreamFinderPlugin::onLoad()
 void StreamFinderPlugin::LoadHooks()
 {
 gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of countdown
-gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // End of game
 gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // State of joining a game
 gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // Called when you leave the match
+gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // End of game
+gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::RecNotif, this, std::placeholders::_1)); // End of game
 //gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // Called when you enter the menu
-gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::HandleMainMenu, this, std::placeholders::_1)); // Called when you enter the menu
+gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::RecNotif, this, std::placeholders::_1)); // Called when you enter the menu
+//gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::HandleMainMenu, this, std::placeholders::_1)); // Called when you enter the menu
 //gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.StartRound", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of kickoff
 //gameWrapper->HookEvent("Function GameEvent_Soccar_TA.ReplayPlayback.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of goal replay
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnOvertimeUpdated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of overtime
@@ -185,18 +219,62 @@ void StreamFinderPlugin::Refresh(std::string eventName)
 	}
 } 
 
-void StreamFinderPlugin::HandleMainMenu(std::string eventName)
+void StreamFinderPlugin::RecNotif(std::string eventName)
 {
 	cvarManager->executeCommand("sf_toast");
 
 	if (IsProcessRunning(L"streamlink.exe")) {
-		cvarManager->executeCommand("rec_toast");
+		ModalWrapper modal = gameWrapper->CreateModal("Streamlink Recorder");
+		modal.SetBody("A stream recording is currently in progress...");
+		modal.AddButton("Okay.", true, [&] {
+			});
+		modal.AddButton("Stop Recording", true, [&] {
+			STARTUPINFO startupInfo;
+			PROCESS_INFORMATION pi;
+			memset(&startupInfo, 0, sizeof(STARTUPINFO));
+			startupInfo.cb = sizeof(STARTUPINFO);
+			startupInfo.wShowWindow = false;
+			// Get path for each computer, non-user specific and non-roaming data.
+			// Append product-specific path
+			wchar_t* w_app_data_path;
+			size_t sz = 0;
+			errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+			wchar_t tcsCommandLine[2048]{ 0 };
+			wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs""", w_app_data_path);
+			free(w_app_data_path);
+			CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+			// This solution is used to prevent the program from kicking the player out of the Rocket League window.
+			});
+		modal.AddButton("View Stream", true, [&] {
+			STARTUPINFO startupInfo;
+			PROCESS_INFORMATION pi;
+			memset(&startupInfo, 0, sizeof(STARTUPINFO));
+			startupInfo.cb = sizeof(STARTUPINFO);
+			startupInfo.wShowWindow = false;
+			// Get path for each computer, non-user specific and non-roaming data.
+			// Append product-specific path
+			wchar_t* w_app_data_path;
+			size_t sz = 0;
+			errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+			wchar_t tcsCommandLine[2048]{ 0 };
+			wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\View-Recording.bat""", w_app_data_path);
+			free(w_app_data_path);
+			CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+			// This solution is used to prevent the program from kicking the player out of the Rocket League window.
+			});
+		modal.ShowModal();
 	}
 }
 
 
 void StreamFinderPlugin::onUnload()
 {
+	std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "file.txt");
+	cin << " " << std::endl;
 }
 
 
