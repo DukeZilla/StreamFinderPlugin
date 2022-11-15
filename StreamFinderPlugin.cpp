@@ -58,38 +58,6 @@ void StreamFinderPlugin::onLoad()
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
-	
-	std::ofstream cout(gameWrapper-> GetDataFolder() / "StreamFinder" / "file.txt" );
-	cout << "emIwZzF3dWZrczJscTdvaHB4Y2V0aXI0bWFuNXl2 \n"
-			"NHE4bjNqNjdoMW13eWtwYXp4cjI1c3UwOWRlY29i \n"
-			"dTlmeXptNWFlOGtkMzZuZzd2Y2xydGkxd3hzcXAy \n"
-			"bXkxd2xzdGtyY3A1aTNmbnZoemdicTQ5MGU3eDI2 \n"
-			"NG5najdseHZicHlzZm0zd29kcTI1a3poMWV0Nmlj \n"
-			"czk1MWs0MjZnOHozYXc3djBtdWpybGN0YmVkcHl4 \n"
-			"dWJ6bnl4MmFwMDRtZWczN3dqMWZ0djZsYzlxcmtv \n"
-			"9x23xbmJlNbJ2Y2QycWu0bzFmMzR3N2kwOGs5eHp \n"
-			"NXA4N2p5dTR0b3FkejYwczEzdmtscjJ4Y25ld2hi \n"
-			"NHhlZW1kcjQ2dHlnZ3JrOG51d21jdzFsNDRsbjYz \n"
-			"ZG9zY2FpdWJlNHQ1MjB2ZzlraDczanp3cG1mcnhs \n"
-			"cXBhaDF3Zm12ZzVkaWtlbHI2MDJjNHM4eW8zOWpi \n"
-			"bzUzNzhtNmg5eHN6cWZnaTFqcmRlYXljcG52dzIw \n"
-			"ODNzMWVtZ2xvdnB1NGhybmpkOWF3N3p0cWNmNjBr \n"
-			"aXhxYTd5dWo4NGIwMXN3ZTZ6M3Rwa29ucnZmbTI1 \n"
-			"a3B3dmhmMnVjdHNiM25ybDQ2ZGV4eXowcWpvOG1n \n"
-			"dnc4c3U0MWZrbGQwMmV6dGliOXJheXFuNmc3cGht \n"
-			"OGhubzc5ejNzdHlicXdjajBtYWlsNmt2MmQ0eHUx \n"
-			"bHZvdzNlZDkxeGY4YXI1MG5qenMybTZ5cWd1azdw \n"
-			"dzNlZ25hNXN0aWp1b3h5cXoxOGNtMms3NGJkaDlw \n"
-			"OW9zNTRrd3oxYzI2aHVkNzN5OHRuaXJ4YmxwMGd2 \n"
-			"eDlwbXJ5c242YmpvcWhjMmR2OHphM2tmZzR0bHc3 \n"
-			"M3VzZmk0ODJidDBuaDZnejV5MXFsd2theHZybzlq \n"
-			"N2lnY3J3c2t1bGZwcGwwam96Y202ajlxNHFlNzJ5 \n"
-			"NHFzM2h1eWx6OTBwajZlZG9uYndyN2dpMjhtZnh2 \n"
-			"cmU5ZnR3bW5nOHlzeGx1M292MnBkNmpjNTdoYjRp \n"
-			"bmc5OG8xMHlwcnphd2h2anNxN214NnUzZWI0dGZr \n"
-			"MWdzamw3bXJhMDYycXVueGhla2Rvd3R6ZjRiOTh5 \n"
-			"cGxqZHpvMXMzZzVhODd5dmM0cTBiMjZmZW05dXhu" << std::endl;
-	cout.close();
 
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
@@ -273,8 +241,6 @@ void StreamFinderPlugin::RecNotif(std::string eventName)
 
 void StreamFinderPlugin::onUnload()
 {
-	std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "file.txt");
-	cin << " " << std::endl;
 }
 
 
