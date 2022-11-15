@@ -45,7 +45,8 @@ public:
 
 	//void LaunchQuickNoteModal();
 	void HandleGameStart(std::string eventName);
-	void ClearList(std::string eventName);
+	void Refresh(std::string eventName);
+	void RecNotif(std::string eventName);
 	void HandleMainMenu(std::string eventName);
 	//void HandlePlayerAdded(std::string eventName);
 
@@ -65,11 +66,18 @@ public:
 	void ToggleMenu(); 
 
 	std::vector<std::string> GetPlayersNames();
+	std::vector<std::string> GetEpicAccountID();
 
 private:
 
+	//GUI
+	void WebhookGUI(bool* p_open);
+	void FileBrowserGUI(bool* p_open);
+	void filetest();
+	void RecWindow(bool* p_open);
+
 	// Tabs
-	void renderWebhookTab();
+	void renderStreamlinkTab();
 	void renderBlacklistsTab();
 	void renderLoggingTab();
 	void renderExtrasTab();
@@ -81,6 +89,8 @@ private:
 	void livelogbufferfunc();
 	void notlivelogbufferfunc();
 	void streamlogbufferfunc();
+	void streamlinkbufferfunc();
+	void RecSesBuf();
 
 	// Buttons
 	void UpdateNotif();
@@ -89,6 +99,14 @@ private:
 	void HookTestNotif();
 	void SearchButton();
 	void Credits();
+	void StopRecording();
+	void ResumeRecording();
+	void SearchButton2();
+
+	// Other functions
+	void ProcessStatus();
+	void LoadHooks2();
+	void OpenRecDir();
 	
 	void Log(std::string msg);
 	bool isWindowOpen = false;
