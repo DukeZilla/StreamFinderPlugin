@@ -6,9 +6,12 @@
 #include <iostream>
 #include <string>
 #include <tchar.h>
+#include "stdio.h";
 #include <fstream>
 #include <shlobj_core.h>
-//#include <Lmcons.h>
+#include "ImGui/imgui_internal.h"
+#include <Lmcons.h>
+#include "tlhelp32.h"
 
 using namespace std;
 
@@ -27,73 +30,17 @@ void StreamFinderPlugin::onLoad()
 			});
 
 	cvarManager->log("Stream Finder Plugin loaded!");
-	//gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "StreamFinder" / "stream_finder_icon.png");
+	gameWrapper->LoadToastTexture("sfimg", gameWrapper->GetDataFolder() / "StreamFinder" / "stream_finder_icon.png");
 	cvarManager->registerNotifier("sf_toast", [this](std::vector<std::string> args) {
 	gameWrapper->Toast("Stream Finder Plugin", "Plugin is active!", "sfimg", 5.0, ToastType_OK);
 	}, "", PERMISSION_ALL);
-	cvarManager->executeCommand("cool_toast");
+	cvarManager->registerNotifier("rec_toast", [this](std::vector<std::string> args) {
+		gameWrapper->Toast("Stream Finder Recorder", "A recording is still in progress!", "sfimg", 5.0, ToastType_Error);
+		}, "", PERMISSION_ALL);
+	cvarManager->executeCommand("sf_toast");
+
 	this->LoadHooks();
-
-	// For initiating the stream detector
-	string str00 = "set shell = wscript.createobject(\"wscript.shell\")";
-	string str01 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-	string str02 = "file = Chr(34) & appData & \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\streamfinder.bat\" & Chr(34)";
-	string str03 = "shell.run file, 0";
-	string str04 = "wscript.quit";
-	ofstream outfile00;
-	outfile00.open("C:\\Windows\\Temp\\stream-finder.vbs");
-	outfile00 << str00 << endl;
-	outfile00 << str01 << endl;
-	outfile00 << str02 << endl;
-	outfile00 << str03 << endl;
-	outfile00 << str04 << endl;
-	outfile00.close();
-
-	// For opening the stream finder directory
-	string str05 = "set shell = wscript.createobject(\"wscript.shell\")";
-	string str06 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-	string str07 = "file = Chr(34) & appData & \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\\" & Chr(34)";
-	string str08 = "shell.run file, 0";
-	string str09 = "wscript.quit";
-	ofstream outfile01;
-	outfile01.open("C:\\Windows\\Temp\\directory.vbs");
-	outfile01 << str05 << endl;
-	outfile01 << str06 << endl;
-	outfile01 << str07 << endl;
-	outfile01 << str08 << endl;
-	outfile01 << str09 << endl;
-	outfile01.close();
-
-	// Crash prevention
-	string str10 = "set shell = wscript.createobject(\"wscript.shell\")";
-	string str11 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-	string str12 = "file00 = Chr(34) & appData & \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\IfExistCheck.bat\" & Chr(34)";
-	string str13 = "shell.run file00, 0";
-	string str14 = "wscript.quit";
-	ofstream outfile02;
-	outfile02.open("C:\\Windows\\Temp\\IfExistCheck.vbs");
-	outfile02 << str10 << endl;
-	outfile02 << str11 << endl;
-	outfile02 << str12 << endl;
-	outfile02 << str13 << endl;
-	outfile02 << str14 << endl;
-	outfile02.close();
-
-	// For the update button
-	string str15 = "set shell = wscript.createobject(\"wscript.shell\")";
-	string str16 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
-	string str17 = "file00 = Chr(34) & appData & \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\update.bat\" & Chr(34)";
-	string str18 = "shell.run file00";
-	string str19 = "wscript.quit";
-	ofstream outfile03;
-	outfile03.open("C:\\Windows\\Temp\\update.vbs");
-	outfile03 << str15 << endl;
-	outfile03 << str16 << endl;
-	outfile03 << str17 << endl;
-	outfile03 << str18 << endl;
-	outfile03 << str19 << endl;
-	outfile03.close();
-
+	
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION pi;
 	memset(&startupInfo, 0, sizeof(STARTUPINFO));
@@ -101,8 +48,13 @@ void StreamFinderPlugin::onLoad()
 	startupInfo.wShowWindow = false;
 	// Get path for each computer, non-user specific and non-roaming data.
 	// Append product-specific path
-	TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\IfExistCheck.vbs""");
-	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+	wchar_t* w_app_data_path;
+	size_t sz = 0;
+	errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+	wchar_t tcsCommandLine[2048]{ 0 };
+	wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\FileCheck.vbs""", w_app_data_path);
+	free(w_app_data_path);
+	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
@@ -121,7 +73,7 @@ void StreamFinderPlugin::onLoad()
 
 	//cvar2.addOnValueChanged(std::bind(&StreamFinderPlugin::YourPluginMethod, this, _1, _2));
 
-	// enabled decleared in the header
+	//enabled decleared in the header
 	//enabled = std::make_shared<bool>(false);
 	//cvarManager->registerCvar("TEMPLATE_Enabled", "0", "Enable the TEMPLATE plugin", true, true, 0, true, 1).bindTo(enabled);
 
@@ -143,16 +95,16 @@ void StreamFinderPlugin::onLoad()
 void StreamFinderPlugin::LoadHooks()
 {
 gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of countdown
-gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::ClearList, this, std::placeholders::_1)); // End of game
+gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // End of game
+gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // State of joining a game
+gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // Called when you leave the match
+//gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::Refresh, this, std::placeholders::_1)); // Called when you enter the menu
+gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::HandleMainMenu, this, std::placeholders::_1)); // Called when you enter the menu
 //gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.StartRound", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of kickoff
-gameWrapper->HookEvent("Function OnlineGameJoinGame_X.JoiningBase.IsJoiningGame", std::bind(&StreamFinderPlugin::ClearList, this, std::placeholders::_1)); // State of joining a game
 //gameWrapper->HookEvent("Function GameEvent_Soccar_TA.ReplayPlayback.BeginState", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of goal replay
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnOvertimeUpdated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Start of overtime
 //gameWrapper->HookEvent("Function TAGame.GameEvent_TA.AddCar", std::bind(&StreamFinderPlugin::HandlePlayerAdded, this, std::placeholders::_1)); // Called when a car spawns
 //gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnAllTeamsCreated", std::bind(&StreamFinderPlugin::HandleGameStart, this, std::placeholders::_1)); // Once all teams are formed
-//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&StreamFinderPlugin::HandleGameEnd, this, std::placeholders::_1)); // Called when the match ends
-//gameWrapper->HookEvent("Function TAGame.GFxShell_TA.LeaveMatch", std::bind(&StreamFinderPlugin::HandleGameLeave, this, std::placeholders::_1)); // Called when you leave the match
-gameWrapper->HookEvent("Function TAGame.GFxData_MainMenu_TA.MainMenuAdded", std::bind(&StreamFinderPlugin::HandleMainMenu, this, std::placeholders::_1)); // Called when you enter the menu
 }
 
 std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
@@ -190,23 +142,56 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 	startupInfo.wShowWindow = false;
 	// Get path for each computer, non-user specific and non-roaming data.
 	// Append product-specific path
-	TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\stream-finder.vbs""");
-	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+	wchar_t* w_app_data_path;
+	size_t sz = 0;
+	errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+	wchar_t tcsCommandLine[2048]{ 0 };
+	wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs""", w_app_data_path);
+	free(w_app_data_path);
+	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
-	cvarManager->log("Stream Detector Launched.");
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
 }
 
-void StreamFinderPlugin::ClearList(std::string eventName)
-{
+static bool IsProcessRunning(const wchar_t* processName) {
+	bool exists = false;
+	PROCESSENTRY32 entry;
+	entry.dwSize = sizeof(PROCESSENTRY32);
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+	if (Process32First(snapshot, &entry))
+		while (Process32Next(snapshot, &entry)) {
+
+			wcout << entry.szExeFile << endl;
+
+			if (!_wcsicmp(entry.szExeFile, processName))
+				exists = true;
+		}
+
+	CloseHandle(snapshot);
+	return exists;
+}
+
+void StreamFinderPlugin::Refresh(std::string eventName)
+{	
 	std::ofstream bl(gameWrapper->GetDataFolder() / "StreamFinder" / "blacklist-log.txt");
 	bl << " " << std::endl;
-}
+	bl.close();
+
+	if (IsProcessRunning(L"streamlink.exe")) {
+		cvarManager->executeCommand("rec_toast");
+	}
+} 
 
 void StreamFinderPlugin::HandleMainMenu(std::string eventName)
 {
 	cvarManager->executeCommand("sf_toast");
+
+	if (IsProcessRunning(L"streamlink.exe")) {
+		cvarManager->executeCommand("rec_toast");
+	}
 }
 
 
