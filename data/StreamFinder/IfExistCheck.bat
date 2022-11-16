@@ -18,6 +18,11 @@ IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo None. >> streamli
 IF EXIST Recordings (echo "Recordings folder exists") else (mkdir Recordings)
 
 :: VBS Files
+del stream-finder.vbs
+del record.vbs
+del recordings-dir.vbs
+del stop-recording.vbs
+
 IF EXIST stream-finder.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > stream-finder.vbs
 	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> stream-finder.vbs
 	echo file = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\streamfinder.bat" ^& Chr(34^) >> stream-finder.vbs
@@ -45,7 +50,7 @@ IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = 
 	)
 
 :: Path
-IF EXIST Path.txt (echo "streamlink Path Exists") else (cd \ & where /r . streamlink.exe > "%back%\Path.txt")
+IF EXIST Path.txt (echo "streamlink Path Exists") else (cd \ & where /r . streamlink.exe > "%back%\Path-streamlink.txt")
 IF EXIST Path.txt (echo "ffmpeg Path Exists") else (cd \ & where /r . ffmpeg.exe > "%back%\Path-ffmpeg.txt")
 taskkill /im cmd.exe -f
 exit
