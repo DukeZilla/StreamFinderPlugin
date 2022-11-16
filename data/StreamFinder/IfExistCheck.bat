@@ -37,8 +37,12 @@ IF EXIST record.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = ws
 	echo wscript.quit >> record.vbs
 	)
 	
-IF EXIST stop-recording.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > stop-recording.vbs
+IF EXIST stop-recording.vbs (echo "Stop Rec vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > stop-recording.vbs
+	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> stop-recording.vbs
+	echo file = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\ffmpeg-converter.bat" ^& Chr(34^) >> stop-recording.vbs
 	echo shell.run "taskkill /im streamlink.exe -f", 0 >> stop-recording.vbs
+	echo wscript.sleep 2000 >> stop-recording.vbs
+	echo shell.run file, 0 >> stop-recording.vbs
 	echo wscript.quit >> stop-recording.vbs
 	)
 
