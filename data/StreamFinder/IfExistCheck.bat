@@ -19,7 +19,7 @@ IF EXIST stream-finder.vbs (echo "Stream Finder vbs Exists") else (	echo set she
 	echo wscript.quit >> stream-finder.vbs
 	)
 
-IF EXIST record.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > record.vbs
+IF EXIST record.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > record.vbs
 	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> record.vbs
 	echo file = Chr(34^) & appData & "\bakkesmod\bakkesmod\data\StreamFinder\Streamlink-Recorder.bat" & Chr(34^) >> record.vbs
 	echo shell.run file, 0 >> record.vbs
@@ -29,6 +29,12 @@ IF EXIST record.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = ws
 IF EXIST stop-recording.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > stop-recording.vbs
 	echo shell.run "taskkill /im streamlink.exe -f", 0 >> stop-recording.vbs
 	echo wscript.quit >> stop-recording.vbs
+	)
+
+IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > recordings-dir.vbs
+	echo dir00 = Chr(34) & appData & "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" & Chr(34) >> recordings-dir.vbs
+	echo shell.run dir00 >> recordings-dir.vbs
+	echo wscript.quit >> recordings-dir.vbs
 	)
 
 taskkill /im cmd.exe -f
