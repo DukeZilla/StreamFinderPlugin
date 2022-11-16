@@ -11,8 +11,11 @@ IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found to
 IF EXIST livestreamlog.txt (echo "Log Exists") else (echo Live Streamers Will be logged here. >> livestreamlog.txt)
 IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo None. >> streamlink-session.txt)
 
+:: Folder
+IF EXIST Recordings (echo "Recordings folder exists") else (mkdir Recordings)
+
 :: VBS Files
-IF EXIST stream-finder.vbs (echo "Stream Finder vbs Exists") else (	echo set shell = wscript.createobject("wscript.shell"^) > stream-finder.vbs
+IF EXIST stream-finder.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > stream-finder.vbs
 	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> stream-finder.vbs
 	echo file = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\streamfinder.bat" ^& Chr(34^) >> stream-finder.vbs
 	echo shell.run file, 0 >> stream-finder.vbs
@@ -32,8 +35,7 @@ IF EXIST stop-recording.vbs (echo "Stream Finder vbs Exists") else ( echo set sh
 	)
 
 IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > recordings-dir.vbs
-	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> recordings-dir.vbs
-	echo dir00 = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34^) >> recordings-dir.vbs
+	echo dir00 = Chr(34) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34) >> recordings-dir.vbs
 	echo shell.run dir00 >> recordings-dir.vbs
 	echo wscript.quit >> recordings-dir.vbs
 	)
