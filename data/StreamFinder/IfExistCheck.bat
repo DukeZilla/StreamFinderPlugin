@@ -1,6 +1,9 @@
 @echo off
 break off
 title Crash Prevention File
+PUSHD "%CD%"
+CD /D "%~dp0"
+set back=%cd%
 cls
 goto main
 
@@ -35,10 +38,13 @@ IF EXIST stop-recording.vbs (echo "Stream Finder vbs Exists") else ( echo set sh
 	)
 
 IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > recordings-dir.vbs
-	echo dir00 = Chr(34) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34) >> recordings-dir.vbs
+	echo dir00 = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34^) >> recordings-dir.vbs
 	echo shell.run dir00 >> recordings-dir.vbs
 	echo wscript.quit >> recordings-dir.vbs
 	)
+
+:: Path
+IF EXIST Path.txt (echo "Path Exists") else (cd \ & where /r . streamlink.exe > "%back%\Path.txt")
 
 taskkill /im cmd.exe -f
 exit
