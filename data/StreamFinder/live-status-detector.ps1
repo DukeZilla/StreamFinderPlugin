@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.54"
+echo "Stream Finder | Detector Version 1.56"
 
 Import-Module C:Twitch-Token.psm1
 
