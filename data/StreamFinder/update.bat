@@ -6,7 +6,7 @@ CD /D "%~dp0"
 goto main
 
 :main
-title Stream Finder Plugin Updater V1.0
+title Stream Finder Plugin Updater Version 1.1
 @echo off
 cls
 color 5
@@ -47,9 +47,8 @@ echo.
   echo cd data 
   echo cd StreamFinder 
   echo copy "updater.ps1" "$p\StreamFinder" 
-  echo sleep 0.5
-  echo exit ) >> confirmer.ps1 
-  
+  echo exit ) > confirmer.ps1 
+ 
 echo.
 powershell.exe -executionpolicy bypass -f "confirmer.ps1"
 if %errorlevel%==1 (
