@@ -22,6 +22,7 @@ static char buffer00[1024]; // For the Permanent blacklist
 static char buffer01[1024]; // For the Lobby list
 static char buffer05[1024]; // For the Search Bar
 static char link00[1024] = "https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
+static char link01[1024] = "https://www.videolan.org/vlc/";
 static char streamlinkBuf00[1024]; // For the Streamlink recording status
 
 // For reading powershell output
@@ -56,7 +57,7 @@ std::string StreamFinderPlugin::GetPluginName() {
 void StreamFinderPlugin::RenderSettings() {
     if (webhook_window)     WebhookGUI(&webhook_window);
     if (fb_window)     FileBrowserGUI(&fb_window);
-    ImGui::TextUnformatted("Plugin Version 1.24 | Build 475");
+    ImGui::TextUnformatted("Plugin Version 1.24 | Build 450");
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 	if (!enableCvar) {
 		return;
@@ -644,8 +645,13 @@ void StreamFinderPlugin::OpenRecDir() {
     startupInfo.wShowWindow = false;
     // Get path for each computer, non-user specific and non-roaming data.
     // Append product-specific path
-    TCHAR tcsCommandLine[] = _T("start ""C:\\Windows\\Temp\\recordings-dir.vbs""");
-    CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, NULL, NULL, TRUE, 0, NULL, NULL, (LPSTARTUPINFOW)&startupInfo, &pi);
+    wchar_t* w_app_data_path;
+    size_t sz = 0;
+    errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+    wchar_t tcsCommandLine[2048]{ 0 };
+    wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\recordings-dir.vbs""", w_app_data_path);
+    free(w_app_data_path);
+    CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     // This solution is used to prevent the program from kicking the player out of the Rocket League window.
@@ -697,10 +703,9 @@ void StreamFinderPlugin::renderLoggingTab() {
                 ImGui::Text("%s", buffer03.c_str()); ImGui::NextColumn();
                 ImGui::Separator();
             }
-
-            ImGui::EndChild();
-            ImGui::EndTabItem();
         }
+        ImGui::EndChild();
+        ImGui::EndTabItem();
     }
 }
 
@@ -772,16 +777,21 @@ void StreamFinderPlugin::renderStreamlinkTab() {
                 ImGui::BulletText("- How to install Streamlink -");
                 ImGui::BulletText("Click the website below and download the setup file. (Recommend \"streamlink-5.0.1-1-py310-x86_64.exe\")");
                 if (ImGui::Button(link00)) {
-                    const wchar_t* url = L"https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
-                    const wchar_t* action = L"Open";
-                    ShellExecute(NULL, action, url, NULL, NULL, SW_SHOWNORMAL);
+                    const wchar_t* url00 = L"https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
+                    const wchar_t* action00 = L"Open";
+                    ShellExecute(NULL, action00, url00, NULL, NULL, SW_SHOWNORMAL);
                 }
                 ImGui::BulletText("After the setup, you should be all set... it's that quick!");
                 ImGui::BulletText("With Streamlink, you can record streams with no resource-heavy recorders or with websites, it will \n"
                 "record these twitch streams in the background during your gameplay when a streamer is found!");
                 ImGui::BulletText("When a recording is in session it will tell you in the status in the \"Streamlink Recorder\" block, \n"
                 "or a bakkesmod toast (notification) will pop up on the top right hand of your screen. Be sure to have bakkesmod notifications turned on!");
-                ImGui::BulletText("Recommended that you download VLC media player to view these recordings, as it is more efficient.");
+                ImGui::BulletText("Recommended that you download VLC media player to view these recordings, VLC will allow you to view streams live.");
+                if (ImGui::Button(link01)) {
+                    const wchar_t* url01 = L"https://www.videolan.org/vlc/";
+                    const wchar_t* action01 = L"Open";
+                    ShellExecute(NULL, action01, url01, NULL, NULL, SW_SHOWNORMAL);
+                }
                 ImGui::Separator();
             }
         }
@@ -830,10 +840,9 @@ void StreamFinderPlugin::renderBlacklistsTab() {
                 ImGui::BulletText("Side note: All bot names have been blacklisted by default to prevent false positives.");
                 ImGui::Separator();
             }
-
-            ImGui::EndChild();
-            ImGui::EndTabItem();
         }
+        ImGui::EndChild();
+        ImGui::EndTabItem();
     }
 }
 
@@ -847,10 +856,9 @@ void StreamFinderPlugin::renderExtrasTab() {
             SearchButton();
 
             ImGui::TextUnformatted("-------------------------------------------------------------------------O");
-
-            ImGui::EndChild();
-            ImGui::EndTabItem();
         }
+        ImGui::EndChild();
+        ImGui::EndTabItem();
     }
 }
 
