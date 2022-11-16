@@ -48,9 +48,6 @@ IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = 
 	echo shell.run dir00 >> recordings-dir.vbs
 	echo wscript.quit >> recordings-dir.vbs
 	)
-
-:: Path
-IF EXIST Path.txt (echo "streamlink Path Exists") else (cd \ & where /r . streamlink.exe > "%back%\Path-streamlink.txt")
-IF EXIST Path.txt (echo "ffmpeg Path Exists") else (cd \ & where /r . ffmpeg.exe > "%back%\Path-ffmpeg.txt")
+	
 taskkill /im cmd.exe -f
 exit
