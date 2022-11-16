@@ -32,7 +32,8 @@ IF EXIST stop-recording.vbs (echo "Stream Finder vbs Exists") else ( echo set sh
 	)
 
 IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > recordings-dir.vbs
-	echo dir00 = Chr(34) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34) >> recordings-dir.vbs
+	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> recordings-dir.vbs
+	echo dir00 = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34^) >> recordings-dir.vbs
 	echo shell.run dir00 >> recordings-dir.vbs
 	echo wscript.quit >> recordings-dir.vbs
 	)
