@@ -1,1 +1,1 @@
-Plugin Version 1.24 | Build 477
+Plugin Version 1.24 | Build 495
