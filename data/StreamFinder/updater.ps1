@@ -24,6 +24,7 @@ copy "Streamlink-Recorder.bat" "$p\data\StreamFinder"
 copy "stream_finder_icon.png" "$p\data\StreamFinder"
 copy "FileCheck.vbs" "$p\data\StreamFinder"
 copy "View-Recording.bat" "$p\data\StreamFinder"
+copy "ffmpeg-converter.bat" "$p\data\StreamFinder"
 copy "version.txt" "$p\data\StreamFinder"
 cd ..
 cd ..
