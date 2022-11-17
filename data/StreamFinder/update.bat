@@ -6,7 +6,7 @@ CD /D "%~dp0"
 goto main
 
 :main
-title Stream Finder Plugin Updater Version 1.3
+title Stream Finder Plugin Updater Version 1.3.1
 @echo off
 cls
 color 5
@@ -21,6 +21,8 @@ echo.
 echo By P as in Papi
 echo.
 echo.
+del updater.ps1
+del confirmer.ps1
 
 ( echo function start_notif {
   echo Add-Type -AssemblyName System.Windows.Forms
@@ -59,6 +61,7 @@ if %errorlevel%==1 (
 	echo An error has occurred when attempting to run:
 	echo "confirmer.ps1"
 	echo.
+	del confirmer.ps1
 	timeout 5
 	exit
 )
@@ -68,6 +71,7 @@ if %errorlevel%==1 (
 	echo An error has occurred when attempting to run:
 	echo "updater.ps1"
 	echo.
+	del updater.ps1
 	timeout 5
 	exit
 )
@@ -77,5 +81,6 @@ del confirmer.ps1
 color 0a
 echo Update for the Stream Finder Plugin is finished!
 echo. 
+pause
 timeout 5
 exit
