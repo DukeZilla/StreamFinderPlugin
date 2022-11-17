@@ -6,7 +6,7 @@ CD /D "%~dp0"
 goto main
 
 :main
-title Stream Finder Plugin Updater Version 1.1
+title Stream Finder Plugin Updater Version 1.3
 @echo off
 cls
 color 5
@@ -36,16 +36,19 @@ echo.
   echo start_notif
   echo cd .. 
   echo $p = (pwd^).path 
+  echo Write-host "Downloading Stream Finder Plugin"
   echo $source = "https://github.com/DukeZilla/StreamFinderPlugin/archive/refs/heads/main.zip" 
   echo $destination = "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" 
   echo Invoke-WebRequest $source -OutFile $destination 
   echo cd \ 
   echo cd $env:USERPROFILE\Downloads 
+  echo Write-host "Extracting files to Downloads folder"
   echo Expand-Archive -LiteralPath "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" -Force 
   echo cd StreamFinderPlugin 
   echo cd StreamFinderPlugin-main 
   echo cd data 
   echo cd StreamFinder 
+  echo Write-host "Starting update..."
   echo copy "updater.ps1" "$p\StreamFinder" 
   echo exit ) > confirmer.ps1 
  
