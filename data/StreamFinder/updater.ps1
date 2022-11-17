@@ -1,5 +1,6 @@
+write-host Logs:
 $rl = (get-process -name RocketLeague -erroraction silentlycontinue).path
-kill -name RocketLeague -Force -erroraction silentlycontinue
+cmd.exe /c taskkill /t /im rocketleague.exe /f
 if (get-process -name steam) {
 	$steam = (get-process -name steam -erroraction silentlycontinue).path
 	cmd.exe /c taskkill /t /im steam.exe /f
@@ -15,28 +16,38 @@ cd StreamFinderPlugin-main
 cd data 
 cd StreamFinder 
 copy "live-status-detector.ps1" "$p\data\StreamFinder" 
+write-host "Copied live-status-detector.ps1"
 copy "logger.ps1" "$p\data\StreamFinder" 
+write-host "Copied logger.ps1"
 copy "log.bat" "$p\data\StreamFinder"
+write-host "Copied log.bat"
 copy "IfExistCheck.bat" "$p\data\StreamFinder"
+write-host "Copied IfExistCheck.bat"
 copy "Twitch-Token.psm1" "$p\data\StreamFinder"
+write-host "Copied Twitch-Token.psm1"
 copy "update.bat" "$p\data\StreamFinder"
+write-host "Copied update.bat"
 copy "Streamlink-Recorder.bat" "$p\data\StreamFinder"
+write-host "Copied Streamlink-Recorder.bat"
 copy "stream_finder_icon.png" "$p\data\StreamFinder"
+write-host "Copied stream_finder_icon.png"
 copy "FileCheck.vbs" "$p\data\StreamFinder"
+write-host "Copied FileCheck.vbs"
 copy "View-Recording.bat" "$p\data\StreamFinder"
+write-host "Copied View-Recording.bat"
 copy "ffmpeg-converter.bat" "$p\data\StreamFinder"
+write-host "Copied ffmpeg-converter.bat"
 copy "version.txt" "$p\data\StreamFinder"
+write-host "Copied version.txt"
 cd ..
 cd ..
 cd Plugins
 copy "StreamFinderPlugin.dll" "$p\plugins"
+write-host "Updated StreamFinderPlugin.dll"
 cd $env:USERPROFILE\Downloads 
 rmdir StreamFinderPlugin -Recurse -Force
 del StreamFinderPlugin.zip 
 cd "$p\data\StreamFinder"
-if (-not(gc livestreamlog.txt -erroraction silentlycontinue)) {echo " " | Out-File -Append -Encoding Ascii "livestreamlog.txt"}
-if (-not(gc Session-blacklist.txt -erroraction silentlycontinue)) {echo " " | Out-File -Append -Encoding Ascii "Session-blacklist.txt"}
-if (-not(gc PeaceOfMind.txt -erroraction silentlycontinue)) {echo " " | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"}
 function update_notif {
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
