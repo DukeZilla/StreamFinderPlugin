@@ -48,6 +48,7 @@ cd $env:USERPROFILE\Downloads
 rmdir StreamFinderPlugin -Recurse -Force
 del StreamFinderPlugin.zip 
 cd "$p\data\StreamFinder"
+start FileCheck.vbs
 function update_notif {
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
