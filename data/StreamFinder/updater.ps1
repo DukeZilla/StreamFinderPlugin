@@ -1,4 +1,4 @@
-write-host Logs:
+write-host "Logs:"
 $rl = (get-process -name RocketLeague -erroraction silentlycontinue).path
 cmd.exe /c taskkill /t /im rocketleague.exe /f
 if (get-process -name steam) {
