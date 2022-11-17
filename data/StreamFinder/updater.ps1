@@ -2,7 +2,7 @@ $rl = (get-process -name RocketLeague -erroraction silentlycontinue).path
 kill -name RocketLeague -Force -erroraction silentlycontinue
 if (get-process -name steam) {
 	$steam = (get-process -name steam -erroraction silentlycontinue).path
-	kill -name Steam -force
+	cmd.exe /c taskkill /t /im steam.exe /f
 	}
 sleep 1
 cd .. 
