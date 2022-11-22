@@ -52,7 +52,7 @@ void StreamFinderPlugin::onLoad()
 	size_t sz = 0;
 	errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
 	wchar_t tcsCommandLine[2048]{ 0 };
-	wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\FileCheck.vbs""", w_app_data_path);
+	wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\FileCheck.vbs\"", w_app_data_path);
 	free(w_app_data_path);
 	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
@@ -148,7 +148,7 @@ void StreamFinderPlugin::HandleGameStart(std::string eventName)
 	size_t sz = 0;
 	errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
 	wchar_t tcsCommandLine[2048]{ 0 };
-	wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs""", w_app_data_path);
+	wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs\"", w_app_data_path);
 	free(w_app_data_path);
 	CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
 	CloseHandle(pi.hProcess);
@@ -208,7 +208,7 @@ void StreamFinderPlugin::RecNotif(std::string eventName)
 			size_t sz = 0;
 			errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
 			wchar_t tcsCommandLine[2048]{ 0 };
-			wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs""", w_app_data_path);
+			wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs\"", w_app_data_path);
 			free(w_app_data_path);
 			CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
 			CloseHandle(pi.hProcess);
