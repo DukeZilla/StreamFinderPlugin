@@ -91,9 +91,12 @@ private:
 	void streamlogbufferfunc();
 	void streamlinkbufferfunc();
 	void RecSesBuf();
+	void PathBuf00();
+	void PathBuf01();
+	void ComboBuf00();
 
 	// Buttons
-	void UpdateNotif();
+	void UpdateButton();
 	void DiscSaveNotif();
 	void ListSaveNotif();
 	void HookTestNotif();
@@ -102,11 +105,19 @@ private:
 	void StopRecording();
 	void ResumeRecording();
 	void SearchButton2();
+	void ViewSession();
 
 	// Other functions
 	void ProcessStatus();
 	void LoadHooks2();
 	void OpenRecDir();
+
+	// Popup
+	void SetPathPopup();
+	void UpdateNotif();
+
+	// Threads
+	//std::thread t1();
 	
 	void Log(std::string msg);
 	bool isWindowOpen = false;
