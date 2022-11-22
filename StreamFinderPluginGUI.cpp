@@ -7,14 +7,16 @@
 #include <tchar.h>
 #include <shlobj_core.h>
 #include "ImGui/imgui_internal.h"
-#include "imfilebrowser.h"
 #include "tlhelp32.h"
 #include <windows.h>
 #include <shellapi.h>
 
-using namespace std;
+using namespace std; 
 
 // Plugin Settings Window code here
+
+// PLUGIN VERSION
+static char PlugVerMain[1024] = "Plugin Version 1.24 | Build 508";
 
 // Buffers
 static char bufferBoi[1024]; // For the discord webhook
@@ -24,6 +26,17 @@ static char buffer05[1024]; // For the Search Bar
 static char link00[1024] = "https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
 static char link01[1024] = "https://www.videolan.org/vlc/";
 static char streamlinkBuf00[1024]; // For the Streamlink recording status
+static char path00[1024]; // For the streamlink path file
+static char path01[1024]; // For the ffmpeg path file
+static char PlugVerOld[1024]; // Plugin version from txt file
+static char TwtchUsrs[1024]; // Plugin version from txt file
+static char comboNames00[1024];
+
+// Pointers
+static std::vector<char*> tokens;
+
+// Flags
+std::once_flag oneflag;
 
 // For reading powershell output
 static inline std::string buffer02{}; // Not live
@@ -39,6 +52,9 @@ static void FileBrowserGUI(bool* p_open);
 static bool webhook_window = false; // Bool to toggle the window
 static bool fb_window = false; // Bool to toggle the window
 static bool streamlink = false; // Bool to toggle streamlink
+
+// int
+static int selectednames = 0;
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return pluginNiceName_;
@@ -57,10 +73,10 @@ std::string StreamFinderPlugin::GetPluginName() {
 void StreamFinderPlugin::RenderSettings() {
     if (webhook_window)     WebhookGUI(&webhook_window);
     if (fb_window)     FileBrowserGUI(&fb_window);
-    ImGui::TextUnformatted("Plugin Version 1.24 | Build 450");
+    ImGui::Text("%s", PlugVerMain); // Plugin Version
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 	if (!enableCvar) {
-		return;
+		return; 
 	}
 
 	bool enabled = enableCvar.getBoolValue();
@@ -111,12 +127,13 @@ void StreamFinderPlugin::RenderSettings() {
     ImGui::PopItemWidth();
     ImGui::TextUnformatted("----------------------------------------------------------------O");
 
-    UpdateNotif();
+    UpdateButton();
 
     ImGui::TextUnformatted("----------------------------------------------------------------O");
     ImGui::TextUnformatted("Plugin made by P as in Papi   |");
     ImGui::SameLine();
     Credits();
+    ImGui::TextUnformatted("If there are any issues message me on Discord ----> Papi#8196 ");
 }
 
 /// <summary>
@@ -148,34 +165,14 @@ void StreamFinderPlugin::WebhookGUI(bool* p_open) {
 }
 
 void StreamFinderPlugin::FileBrowserGUI(bool* p_open) {
-    ImGui::FileBrowser fileDialog;
-
-    // (optional) set browser properties
-    fileDialog.SetTitle("title");
-    fileDialog.SetTypeFilters({ ".*" });
-
-    if (ImGui::Begin("dummy window", p_open))
-    {
-        // open file dialog when user clicks this button
-        if (ImGui::Button("open file dialog"))
-            fileDialog.Open();
-    }
-    ImGui::End();
-
-    fileDialog.Display();
-
-    if (fileDialog.HasSelected())
-    {
-        std::cout << "Selected filename" << fileDialog.GetSelected().string() << std::endl;
-        fileDialog.ClearSelected();
-    }
+    ImGui::TextUnformatted("Plugin made by P as in Papi   |");
 }
 
 /// <summary>
 /// Buttons
 /// </summary>
 
-void StreamFinderPlugin::UpdateNotif()
+void StreamFinderPlugin::UpdateButton()
 {
     if (ImGui::Button("Update Plugin", ImVec2(0, 0))) {
         ImGui::OpenPopup("Update Stream Finder");
@@ -234,16 +231,18 @@ void StreamFinderPlugin::Credits()
     if (ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::BulletText("Testers:");
-        ImGui::Text("Bumpo The Clown, Unlivedmetal,  \n"
+        ImGui::Text("BumpoTheClown, Unlivedmetal,  \n"
             "FourEyesOptic, Daboodeedabodah, stewSquared, \n"
             "Turtle, FreezerBurn_33, rage10b, \n"
             "QS3V3N, GettusRektus, and Sinan Enginist.");
         ImGui::Separator();
         ImGui::BulletText("Big thanks to:");
-        ImGui::Text("JerryTheBee, Vync, ItsBranK \n"
-            "GettusRektus, Martinn, eightfold, the testers \n"
+        ImGui::Text("JerryTheBee, Vync, ItsBranK, Martinn, \n"
+            "BumpoTheClown, GettusRektus, eightfold, the testers \n"
             "and the rest of the bakkesmod programming \n"
             "community for help, ideas, and debugging!");
+        ImGui::Separator();
+        ImGui::Text("- - - Made with love by P as in Papi - - -");
         if (ImGui::Button("Close", ImVec2(310, 0))) {
             ImGui::CloseCurrentPopup();
         }
@@ -307,7 +306,7 @@ void StreamFinderPlugin::HookTestNotif()
         size_t sz = 0;
         errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
         wchar_t tcsCommandLine[2048]{ 0 };
-        wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs""", w_app_data_path);
+        wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs\"", w_app_data_path);
         free(w_app_data_path);
         CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
         CloseHandle(pi.hProcess);
@@ -345,7 +344,7 @@ void StreamFinderPlugin::SearchButton()
         size_t sz = 0;
         errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
         wchar_t tcsCommandLine[2048]{ 0 };
-        wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs""", w_app_data_path);
+        wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs\"", w_app_data_path);
         free(w_app_data_path);
         CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
         CloseHandle(pi.hProcess);
@@ -379,7 +378,7 @@ void StreamFinderPlugin::SearchButton2()
         size_t sz = 0;
         errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
         wchar_t tcsCommandLine[2048]{ 0 };
-        wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs""", w_app_data_path);
+        wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stream-finder.vbs\"", w_app_data_path);
         free(w_app_data_path);
         CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
         CloseHandle(pi.hProcess);
@@ -390,11 +389,7 @@ void StreamFinderPlugin::SearchButton2()
 }
 
 void StreamFinderPlugin::StopRecording() {
-    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));
-    if (ImGui::Button("Stop Recording")) {
-        ImGui::OpenPopup("Streamlink Stop");
-    }
-    ImGui::PopStyleColor();
+    ImGui::OpenPopup("Streamlink Stop");
 
     if (ImGui::BeginPopupModal("Streamlink Stop", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
@@ -412,7 +407,7 @@ void StreamFinderPlugin::StopRecording() {
             size_t sz = 0;
             errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
             wchar_t tcsCommandLine[2048]{ 0 };
-            wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs""", w_app_data_path);
+            wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs\"", w_app_data_path);
             free(w_app_data_path);
             CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
             CloseHandle(pi.hProcess);
@@ -431,16 +426,41 @@ void StreamFinderPlugin::StopRecording() {
     }
 }
 
+void StreamFinderPlugin::ViewSession() {
+    STARTUPINFO startupInfo;
+    PROCESS_INFORMATION pi;
+    memset(&startupInfo, 0, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = false;
+    // Get path for each computer, non-user specific and non-roaming data.
+    // Append product-specific path
+    wchar_t* w_app_data_path;
+    size_t sz = 0;
+    errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+    wchar_t tcsCommandLine[2048]{ 0 };
+    wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\View-Recording.bat""", w_app_data_path);
+    free(w_app_data_path);
+    CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+    OpenRecDir();
+}
+
 void StreamFinderPlugin::ResumeRecording() {
-    if (ImGui::Button("Resume Last Recording", ImVec2(150, 0))) {
+    if (ImGui::Button("Resume Recording", ImVec2(150, 0))) {
         ImGui::OpenPopup("Streamlink Resume");
+    }
+
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Select a name you wish to resume with.");
     }
 
     if (ImGui::BeginPopupModal("Streamlink Resume", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::TextUnformatted("Do you wish to resume your last recording session?");
+        ImGui::TextUnformatted("Do you wish to resume the recording session?");
 
-        if (ImGui::Button("Yes", ImVec2(140, 0))) {
+        if (ImGui::Button("Yes", ImVec2(130, 0))) {
             STARTUPINFO startupInfo;
             PROCESS_INFORMATION pi;
             memset(&startupInfo, 0, sizeof(STARTUPINFO));
@@ -452,7 +472,7 @@ void StreamFinderPlugin::ResumeRecording() {
             size_t sz = 0;
             errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
             wchar_t tcsCommandLine[2048]{ 0 };
-            wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\record.vbs""", w_app_data_path);
+            wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\record.vbs\"", w_app_data_path);
             free(w_app_data_path);
             CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
             CloseHandle(pi.hProcess);
@@ -464,12 +484,91 @@ void StreamFinderPlugin::ResumeRecording() {
 
         ImGui::SameLine();
 
-        if (ImGui::Button("No", ImVec2(140, 0))) {
+        if (ImGui::Button("No", ImVec2(130, 0))) {
             ImGui::CloseCurrentPopup();
         }
 
         ImGui::EndPopup();
     }
+}
+
+/// <summary>
+/// Pop ups
+/// </summary>
+
+void StreamFinderPlugin::SetPathPopup() {
+    if (ImGui::Button("Path Settings", ImVec2(150, 0))) {
+        PathBuf00();
+        PathBuf01();
+        ImGui::OpenPopup("File Path Settings");
+    }
+
+    if (ImGui::BeginPopupModal("File Path Settings", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::BulletText("Streamlink Path:");
+        ImGui::InputText("##PathStreamlink", path00, _countof(path00));
+        ImGui::BulletText("FFmpeg Path:");
+        ImGui::InputText("##PathFFmpeg", path01, _countof(path01));
+
+        ImGui::Separator();
+
+        if (ImGui::Button("Save", ImVec2(140, 0))) {
+            std::ofstream streamlinkpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-streamlink.txt");
+            streamlinkpath << std::string(path00) << endl;
+            streamlinkpath.close();
+            std::ofstream ffmpegpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-ffmpeg.txt");
+            ffmpegpath << std::string(path01) << endl;
+            ffmpegpath.close();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Close", ImVec2(140, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void StreamFinderPlugin::UpdateNotif() {
+    std::call_once(oneflag, []() {
+        if (ImGui::BeginPopupModal("Update", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::BulletText("A new update for the plugin is available, do you wish to continue?");
+            ImGui::BulletText("Requires Rocket League to restart.");
+
+            if (ImGui::Button("Update", ImVec2(140, 0))) {
+                STARTUPINFO startupInfo;
+                PROCESS_INFORMATION pi;
+                memset(&startupInfo, 0, sizeof(STARTUPINFO));
+                startupInfo.cb = sizeof(STARTUPINFO);
+                startupInfo.wShowWindow = false;
+                // Get path for each computer, non-user specific and non-roaming data.
+                // Append product-specific path
+                wchar_t* w_app_data_path;
+                size_t sz = 0;
+                errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+                wchar_t tcsCommandLine[2048]{ 0 };
+                wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\update.bat""", w_app_data_path);
+                free(w_app_data_path);
+                CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+                CloseHandle(pi.hProcess);
+                CloseHandle(pi.hThread);
+                // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Close", ImVec2(140, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+    });
 }
 
 /// <summary>
@@ -499,7 +598,6 @@ void StreamFinderPlugin::permabufferfunc() // Used for the blacklist
         }
         permastring += line00 + '\n';
     }
-    // do outside of render func
     memset(&buffer00, 0, _countof(buffer00)); // init char array
     strncpy_s(buffer00, permastring.c_str(), _countof(buffer00)); // print text to the array/buffer
     perma.close();
@@ -517,10 +615,57 @@ void StreamFinderPlugin::tempbufferfunc() // Used for the "Current Lobby List"
         }
         tempstring += line01 + '\n';
     }
-    // do outside of render func
     memset(&buffer01, 0, _countof(buffer01)); // init char array
     strncpy_s(buffer01, tempstring.c_str(), _countof(buffer01)); // print text to the array/buffer
     temp.close();
+}
+
+void StreamFinderPlugin::PathBuf00()
+{
+    std::string line02;
+    std::string pathstr;
+    std::ifstream ifpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-streamlink.txt");
+    while (getline(ifpath, line02))
+    {
+        if (line02.empty()) {
+            break;
+        }
+        pathstr += line02 + '\n';
+    }
+    memset(&path00, 0, _countof(path00)); // init char array
+    strncpy_s(path00, pathstr.c_str(), _countof(path00)); // print text to the array/buffer
+    ifpath.close();
+}
+
+void StreamFinderPlugin::PathBuf01()
+{
+    std::string line03;
+    std::string path2str;
+    std::ifstream ifpath2(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-ffmpeg.txt");
+    while (getline(ifpath2, line03))
+    {
+        if (line03.empty()) {
+            break;
+        }
+        path2str += line03 + '\n';
+    }
+    memset(&path01, 0, _countof(path01)); // init char array
+    strncpy_s(path01, path2str.c_str(), _countof(path01)); // print text to the array/buffer
+    ifpath2.close();
+}
+
+void StreamFinderPlugin::ComboBuf00()
+{
+    std::string namestr;
+    std::ifstream listpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Combo-Info00.txt");
+    getline(listpath, namestr);
+    listpath.close();
+    char* token = std::strtok(namestr.data(), ".");
+    while (token)
+    {
+        tokens.push_back(token);
+        token = std::strtok(nullptr, ".");
+    }
 }
 
 void StreamFinderPlugin::notlivelogbufferfunc()
@@ -628,11 +773,34 @@ void StreamFinderPlugin::ProcessStatus() {
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         ImGui::Text("RECORDING IN PROGRESS!");
         ImGui::PopStyleColor();
-    }
-    else {
+        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));
+        if (ImGui::Button("Stop Recording")) {
+            StopRecording();
+        }
+        ImGui::PopStyleColor();
+        if (ImGui::Button("View Live Stream", ImVec2(150, 0))) {
+            ViewSession();
+        }
+    } else {
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
         ImGui::Text("No recordings in progress.");
         ImGui::PopStyleColor();
+        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(165, 0, 0, 255));
+        if (ImGui::Button("Stop Recording")) {
+            ImGui::OpenPopup("Stop Streamlink");
+        }
+        ImGui::PopStyleColor();
+        if (ImGui::BeginPopupModal("Stop Streamlink", NULL, ImGuiWindowFlags_AlwaysAutoResize)) { 
+            ImGui::TextUnformatted("No recordings are in progress");
+
+            if (ImGui::Button("Okay.", ImVec2(170, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        if (ImGui::Button("View Recent Recording", ImVec2(150, 0))) {
+            ViewSession();
+        }
     }
     cin.get();
 }
@@ -649,7 +817,7 @@ void StreamFinderPlugin::OpenRecDir() {
     size_t sz = 0;
     errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
     wchar_t tcsCommandLine[2048]{ 0 };
-    wsprintfW(tcsCommandLine, L"start ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\recordings-dir.vbs""", w_app_data_path);
+    wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\recordings-dir.vbs\"", w_app_data_path);
     free(w_app_data_path);
     CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
     CloseHandle(pi.hProcess);
@@ -722,31 +890,17 @@ void StreamFinderPlugin::renderStreamlinkTab() {
             ImGui::Text("Streamlink Status:");
             ImGui::SameLine();
             ProcessStatus();
-            StopRecording();
+            ImGui::TextUnformatted("-------------------------------------------------------O");
+            ImGui::Text("Resume Last Session:");
             ResumeRecording();
-            if (ImGui::Button("View Lastest Recording", ImVec2(150, 0))) {
-                STARTUPINFO startupInfo;
-                PROCESS_INFORMATION pi;
-                memset(&startupInfo, 0, sizeof(STARTUPINFO));
-                startupInfo.cb = sizeof(STARTUPINFO);
-                startupInfo.wShowWindow = false;
-                // Get path for each computer, non-user specific and non-roaming data.
-                // Append product-specific path
-                wchar_t* w_app_data_path;
-                size_t sz = 0;
-                errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
-                wchar_t tcsCommandLine[2048]{ 0 };
-                wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\View-Recording.bat""", w_app_data_path);
-                free(w_app_data_path);
-                CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
-                CloseHandle(pi.hProcess);
-                CloseHandle(pi.hThread);
-                // This solution is used to prevent the program from kicking the player out of the Rocket League window.
-                OpenRecDir();
-            }
+            //ImGui::Combo("Today's List", &selectednames, tokens.data(), sizeof(tokens));
             ImGui::TextUnformatted("-------------------------------------------------------O");
             ImGui::Text("Last Recording Session:");
             ImGui::Text("%s", buffer06.c_str());
+            ImGui::TextUnformatted("-------------------------------------------------------O");
+            ImGui::Text("File Path:");
+            SetPathPopup();
+
         }
 
         ImGui::EndChild();
@@ -774,7 +928,7 @@ void StreamFinderPlugin::renderStreamlinkTab() {
                 ImGui::Separator();
                 ImGui::Text("STREAMLINK:");
                 ImGui::Text("Install Streamlink to automatically record Twitch Streams in the background with no performance impact!");
-                ImGui::BulletText("- How to install Streamlink -");
+                ImGui::Text("- How to install Streamlink -");
                 ImGui::BulletText("Click the website below and download the setup file. (Recommend \"streamlink-5.0.1-1-py310-x86_64.exe\")");
                 if (ImGui::Button(link00)) {
                     const wchar_t* url00 = L"https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
@@ -782,10 +936,15 @@ void StreamFinderPlugin::renderStreamlinkTab() {
                     ShellExecute(NULL, action00, url00, NULL, NULL, SW_SHOWNORMAL);
                 }
                 ImGui::BulletText("After the setup, you should be all set... it's that quick!");
+                ImGui::Text("- Useful Information -");
                 ImGui::BulletText("With Streamlink, you can record streams with no resource-heavy recorders or with websites, it will \n"
                 "record these twitch streams in the background during your gameplay when a streamer is found!");
                 ImGui::BulletText("When a recording is in session it will tell you in the status in the \"Streamlink Recorder\" block, \n"
-                "or a bakkesmod toast (notification) will pop up on the top right hand of your screen. Be sure to have bakkesmod notifications turned on!");
+                "or a bakkesmod toast (notification) will pop up on the top right hand of your screen. \n"
+                "Be sure to have bakkesmod notifications turned on!");
+                ImGui::BulletText("The plugin will also use FFmpeg to convert your recordings to mp4, which comes with streamlink. \n"
+                "This process will happen after you stop recording. You can configure the file paths in the \"File Path Settings\". \n"
+                "These paths will still be automatically configured for you.");
                 ImGui::BulletText("Recommended that you download VLC media player to view these recordings, VLC will allow you to view streams live.");
                 if (ImGui::Button(link01)) {
                     const wchar_t* url01 = L"https://www.videolan.org/vlc/";
@@ -828,8 +987,7 @@ void StreamFinderPlugin::renderBlacklistsTab() {
 
             ImGui::Separator();
 
-            if (ImGui::CollapsingHeader("Help"))
-            {
+            if (ImGui::CollapsingHeader("Help")) {
                 ImGui::Text("STREAM FINDER 101");
                 ImGui::Separator();
                 ImGui::Text("BLACKLIST INFO:");
@@ -931,6 +1089,12 @@ void StreamFinderPlugin::OnOpen()
     notlivelogbufferfunc();
     streamlogbufferfunc();
     RecSesBuf();
+
+    ComboBuf00();
+
+    //std::bind(&UpdateNotif, this);
+    //std::thread t1(oneflag);
+    //t1.join();
 
     isWindowOpen_ = true;
 }
