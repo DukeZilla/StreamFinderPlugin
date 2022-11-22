@@ -16,7 +16,7 @@ using namespace std;
 // Plugin Settings Window code here
 
 // PLUGIN VERSION
-static char PlugVerMain[1024] = "Plugin Version 1.24 | Build 508";
+static char PlugVerMain[1024] = "Plugin Version 1.24 | Build 556";
 
 // Buffers
 static char bufferBoi[1024]; // For the discord webhook
