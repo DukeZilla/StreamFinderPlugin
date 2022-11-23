@@ -1,7 +1,7 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.56"
+echo "Stream Finder | Detector Version 1.57"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -365,6 +365,9 @@ __*Stream Information*__
 	echo "Date: $short_date" | Out-File -Append -Encoding Ascii "streamlink-session.txt"
 	echo "VODs: $vod" | Out-File -Append -Encoding Ascii "streamlink-session.txt"
 	
+	# For ImGui combo box
+	echo "$twitch_username" | Out-File -Append -Encoding Ascii "Combo-Info00.txt"
+	
 	# Start Streamlink
 	start-process record.vbs
 	write-host "STREAMLINK RECORDING STARTED"
@@ -472,6 +475,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	if (-not($d01 -eq $d00)) { # Check date
 		echo "$d00"  | Out-File -Encoding Ascii "Session-Blacklist.txt"
 		write-host "Session blacklist expired, list reset done."
+		del "Combo-Info00.txt" -force
 		$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
 	}
 	if ($session_blacklist -match $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
