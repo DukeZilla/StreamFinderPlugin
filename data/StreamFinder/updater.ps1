@@ -37,6 +37,8 @@ copy "View-Recording.bat" "$p\data\StreamFinder"
 write-host "Copied View-Recording.bat"
 copy "ffmpeg-converter.bat" "$p\data\StreamFinder"
 write-host "Copied ffmpeg-converter.bat"
+copy "Check-Update.bat" "$p\data\StreamFinder"
+write-host "Copied Check-Update.bat"
 copy "version.txt" "$p\data\StreamFinder"
 write-host "Copied version.txt"
 cd ..
