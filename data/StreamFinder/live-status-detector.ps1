@@ -1,16 +1,14 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder | Detector Version 1.57"
+echo "Stream Finder | Detector Version 1.58"
 
 Import-Module C:Twitch-Token.psm1
 
 # Discord webhook linke to variable
 $p = (pwd).path
-cd $env:APPDATA
-cd ..
-cd "Local\Streamlink\bin"
-$global:streamlink_path = (pwd).path
+$file = type Path-streamlink.txt
+$global:streamlink_path = (Get-Item $file).directoryname
 cd $p
 
 $discord_webhook = gc $p\discord-webhook.txt
