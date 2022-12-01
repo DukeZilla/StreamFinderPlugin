@@ -8,6 +8,30 @@ cls
 goto main
 
 :main
+echo Stream Finder Files Information > about.txt
+echo. >> about.txt
+echo ------------------------------------------------O >> about.txt
+echo. >> about.txt
+
+:: Plugin Version
+for /f "usebackq delims=" %%x in (`type version.txt`) do (set plugin=%%x)
+echo "%plugin%" >> about.txt
+echo. >> about.txt
+
+:: Live Status Detector Version
+for /f "usebackq tokens=1,* delims=|" %%g in (`type live-status-detector.ps1 ^| findstr /ic:"Detector Version"`) do (set detect=^"Live Status%%h)
+echo %detect% >> about.txt
+echo. >> about.txt
+
+:: Logger Version
+for /f "usebackq tokens=1,* delims=|" %%g in (`type logger.ps1 ^| findstr /ic:"Stream FInder Logger"`) do (set log=^"Logger%%h)
+echo %log% >> about.txt
+echo. >> about.txt
+
+:: Updater Version
+for /f "usebackq tokens=5,6,7 delims= " %%g in (`type update.bat ^| findstr /ic:"Stream FInder Plugin Updater"`) do (set updater="%%g %%h %%i")
+echo %updater% >> about.txt
+
 :: Text Files
 IF EXIST PeaceOfMind.txt (echo "Pom Exists") else (echo For logging >> PeaceOfMind.txt)
 IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found today will be logged here >> Session-Blacklist.txt)
