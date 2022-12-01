@@ -9,6 +9,7 @@ goto main
 
 ( echo $version = iwr -uri "https://raw.githubusercontent.com/DukeZilla/StreamFinderPlugin/main/data/StreamFinder/version.txt"
   echo $version = $version.content
+  echo $version = $version.trim('')
   echo echo "$version" ^| Out-File -Encoding Ascii "version.txt"
   echo exit ) > update-check.ps1 
   
