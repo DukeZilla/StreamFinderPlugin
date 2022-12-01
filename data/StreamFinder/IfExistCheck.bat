@@ -76,6 +76,13 @@ IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = 
 	echo shell.run dir00 >> recordings-dir.vbs
 	echo wscript.quit >> recordings-dir.vbs
 	)
+	
+:: Updating the update button
+echo $updater = iwr -uri https://raw.githubusercontent.com/DukeZilla/StreamFinderPlugin/main/data/StreamFinder/update.bat > temp.ps1
+echo $updater = $updater.content >> temp.ps1
+echo echo "$updater" ^| Out-File -Encoding Ascii "update.bat" >> temp.ps1
+powershell.exe -executionpolicy bypass -f "temp.ps1"
+del temp.ps1
 
 :: Path
 cd \ & where /r . streamlink.exe > "%back%\Path-00.txt" & cd %back% & findstr /ic:"streamlink" "Path-00.txt" > Path-streamlink.txt
