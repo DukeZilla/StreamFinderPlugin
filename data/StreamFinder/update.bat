@@ -1,94 +1,86 @@
 @echo off
 break off
-title Crash Prevention File
+set __compat_layer=runasinvoker
 PUSHD "%CD%"
 CD /D "%~dp0"
-set back=%cd%
-cls
 goto main
 
 :main
-echo Stream Finder Files Information > about.txt
-echo. >> about.txt
-echo ------------------------------------------------O >> about.txt
-echo. >> about.txt
+title Stream Finder Plugin Updater Version 1.3.1
+@echo off
+cls
+color 5
+echo    _____ __                               _______           __         
+echo   / ___// /_________  ____ _____ ___     / ____(_)___  ____/ /__  _____
+echo   \__ \/ __/ ___/ _ \/ __ `/ __ `__ \   / /_  / / __ \/ __  / _ \/ ___/
+echo  ___/ / /_/ /  /  __/ /_/ / / / / / /  / __/ / / / / / /_/ /  __/ /    
+echo /____/\__/_/   \___/\__,_/_/ /_/ /_/  /_/   /_/_/ /_/\__,_/\___/_/  
+echo.
+echo -----------------------------------------------------------------------------------O
+echo.
+echo By P as in Papi
+echo.
+echo.
+del updater.ps1
+del confirmer.ps1
 
-:: Plugin Version
-for /f "usebackq delims=" %%x in (`type version.txt`) do (set plugin=%%x)
-echo "%plugin%" >> about.txt
-echo. >> about.txt
-
-:: Live Status Detector Version
-for /f "usebackq tokens=1,* delims=|" %%g in (`type live-status-detector.ps1 ^| findstr /ic:"Detector Version"`) do (set detect=^"Live Status%%h)
-echo %detect% >> about.txt
-echo. >> about.txt
-
-:: Logger Version
-for /f "usebackq tokens=1,* delims=|" %%g in (`type logger.ps1 ^| findstr /ic:"Stream FInder Logger"`) do (set log=^"Logger%%h)
-echo %log% >> about.txt
-echo. >> about.txt
-
-:: Updater Version
-for /f "usebackq tokens=5,6,7 delims= " %%g in (`type update.bat ^| findstr /ic:"Stream FInder Plugin Updater"`) do (set updater="%%g %%h %%i")
-echo %updater% >> about.txt
-
-:: Text Files
-IF EXIST PeaceOfMind.txt (echo "Pom Exists") else (echo For logging >> PeaceOfMind.txt)
-IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found today will be logged here >> Session-Blacklist.txt)
-IF EXIST livestreamlog.txt (echo "Log Exists") else (echo Live Streamers Will be logged here. >> livestreamlog.txt)
-IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo None. >> streamlink-session.txt)
-
-:: Folder
-IF EXIST Recordings (echo "Recordings folder exists") else (mkdir Recordings)
-
-:: VBS Files
-del stream-finder.vbs
-del record.vbs
-del recordings-dir.vbs
-del stop-recording.vbs
-
-IF EXIST stream-finder.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > stream-finder.vbs
-	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> stream-finder.vbs
-	echo file = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\streamfinder.bat" ^& Chr(34^) >> stream-finder.vbs
-	echo shell.run file, 0 >> stream-finder.vbs
-	echo wscript.quit >> stream-finder.vbs
-	)
-
-IF EXIST record.vbs (echo "Stream Finder vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > record.vbs
-	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> record.vbs
-	echo file = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Streamlink-Recorder.bat" ^& Chr(34^) >> record.vbs
-	echo shell.run file, 0 >> record.vbs
-	echo wscript.quit >> record.vbs
-	)
-	
-IF EXIST stop-recording.vbs (echo "Stop Rec vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > stop-recording.vbs
-	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> stop-recording.vbs
-	echo file = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\ffmpeg-converter.bat" ^& Chr(34^) >> stop-recording.vbs
-	echo shell.run "taskkill /im streamlink.exe -f", 0 >> stop-recording.vbs
-	echo wscript.sleep 2000 >> stop-recording.vbs
-	echo shell.run file, 0 >> stop-recording.vbs
-	echo wscript.quit >> stop-recording.vbs
-	)
-
-IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = wscript.createobject("wscript.shell"^) > recordings-dir.vbs
-	echo appData = shell.ExpandEnvironmentStrings("%APPDATA%"^) >> recordings-dir.vbs
-	echo dir00 = Chr(34^) ^& appData ^& "\bakkesmod\bakkesmod\data\StreamFinder\Recordings" ^& Chr(34^) >> recordings-dir.vbs
-	echo shell.run dir00 >> recordings-dir.vbs
-	echo wscript.quit >> recordings-dir.vbs
-	)
-	
-:: Updating the update button
-echo $updater = iwr -uri https://raw.githubusercontent.com/DukeZilla/StreamFinderPlugin/main/data/StreamFinder/update.bat > temp.ps1
-echo $updater = $updater.content >> temp.ps1
-echo echo "$updater" ^| Out-File -Encoding Ascii "update.bat" >> temp.ps1
-powershell.exe -executionpolicy bypass -f "temp.ps1"
-del temp.ps1
-
-:: Path
-cd \ & where /r . streamlink.exe > "%back%\Path-00.txt" & cd %back% & findstr /ic:"streamlink" "Path-00.txt" > Path-streamlink.txt
-cd \ & where /r . ffmpeg.exe > "%back%\Path-01.txt" & cd %back% & findstr /ic:"streamlink" "Path-01.txt" > Path-ffmpeg.txt
-del Path-00.txt
-del Path-01.txt
-
-taskkill /im cmd.exe -f
+( echo function start_notif {
+  echo Add-Type -AssemblyName System.Windows.Forms
+  echo $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+  echo $path = (Get-Process -id $pid^).Path
+  echo $balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path^)
+  echo $balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+  echo $balmsg.BalloonTipText = "Update starting..."
+  echo $balmsg.BalloonTipTitle = "Stream Finder Plugin"
+  echo $balmsg.Visible = $true
+  echo $balmsg.ShowBalloonTip(60000^)
+  echo }
+  echo start_notif
+  echo cd .. 
+  echo $p = (pwd^).path 
+  echo Write-host "Downloading Stream Finder Plugin"
+  echo $source = "https://github.com/DukeZilla/StreamFinderPlugin/archive/refs/heads/main.zip" 
+  echo $destination = "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" 
+  echo Invoke-WebRequest $source -OutFile $destination 
+  echo cd \ 
+  echo cd $env:USERPROFILE\Downloads 
+  echo Write-host "Extracting files to Downloads folder"
+  echo Expand-Archive -LiteralPath "$env:USERPROFILE\Downloads\StreamFinderPlugin.zip" -Force 
+  echo cd StreamFinderPlugin 
+  echo cd StreamFinderPlugin-main 
+  echo cd data 
+  echo cd StreamFinder 
+  echo Write-host "Starting update..."
+  echo copy "updater.ps1" "$p\StreamFinder" 
+  echo exit ) > confirmer.ps1 
+ 
+echo.
+powershell.exe -executionpolicy bypass -f "confirmer.ps1"
+if %errorlevel%==1 (
+	color 4
+	echo An error has occurred when attempting to run:
+	echo "confirmer.ps1"
+	echo.
+	del confirmer.ps1
+	timeout 5
+	exit
+)
+powershell.exe -executionpolicy bypass -f "updater.ps1"
+if %errorlevel%==1 (
+	color 4
+	echo An error has occurred when attempting to run:
+	echo "updater.ps1"
+	echo.
+	del updater.ps1
+	timeout 5
+	exit
+)
+echo. 
+del updater.ps1
+del confirmer.ps1
+color 0a
+echo Update for the Stream Finder Plugin is finished!
+echo. 
+pause
+timeout 5
 exit
