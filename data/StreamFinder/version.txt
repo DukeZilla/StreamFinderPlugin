@@ -1,1 +1,1 @@
-Plugin Version 1.24 | Build 590
+Plugin Version 1.24 | Build 621
