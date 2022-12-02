@@ -16,7 +16,7 @@ using namespace std;
 // Plugin Settings Window code here
 
 // PLUGIN VERSION
-static char PlugVerMain[1024] = "Plugin Version 1.24 | Build 556";
+static char PlugVerMain[1024] = "Plugin Version 1.24 | Build 621";
 
 // Buffers
 static char bufferBoi[1024]; // For the discord webhook
@@ -28,9 +28,10 @@ static char link01[1024] = "https://www.videolan.org/vlc/";
 static char streamlinkBuf00[1024]; // For the Streamlink recording status
 static char path00[1024]; // For the streamlink path file
 static char path01[1024]; // For the ffmpeg path file
-static char PlugVerOld[1024]; // Plugin version from txt file
 static char TwtchUsrs[1024]; // Plugin version from txt file
-static char comboNames00[1024];
+static char comboNames00[1024]; // For the resume recording list combo
+static char streamStatus[1024]; // Is the streamer live?
+static char AboutInfoBuf[1024]; // For about pop up
 
 // Pointers
 static std::vector<char*> tokens;
@@ -42,19 +43,24 @@ std::once_flag oneflag;
 static inline std::string buffer02{}; // Not live
 static inline std::string buffer03{}; // Player is live
 static inline std::string buffer04{}; // All live streamers caught
-static inline std::string buffer06{}; // Recording sessions
+static inline std::string buffer06{}; // Recording session
+static inline std::string PlugVerOld{}; // Reading version.txt
 
 // Mini GUIs
 static void WebhookGUI(bool* p_open);
-static void FileBrowserGUI(bool* p_open);
+
+// Pop ups
+static void UpdateNotif(bool* p_open);
 
 // Bools
 static bool webhook_window = false; // Bool to toggle the window
 static bool fb_window = false; // Bool to toggle the window
 static bool streamlink = false; // Bool to toggle streamlink
+static bool YouNeedToUpdate = false;
 
 // int
 static int selectednames = 0;
+static int callcount = 0;
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return pluginNiceName_;
@@ -72,7 +78,6 @@ std::string StreamFinderPlugin::GetPluginName() {
 
 void StreamFinderPlugin::RenderSettings() {
     if (webhook_window)     WebhookGUI(&webhook_window);
-    if (fb_window)     FileBrowserGUI(&fb_window);
     ImGui::Text("%s", PlugVerMain); // Plugin Version
 	CVarWrapper enableCvar = cvarManager->getCvar("stream_finder_enabled");
 	if (!enableCvar) {
@@ -132,7 +137,7 @@ void StreamFinderPlugin::RenderSettings() {
     ImGui::TextUnformatted("----------------------------------------------------------------O");
     ImGui::TextUnformatted("Plugin made by P as in Papi   |");
     ImGui::SameLine();
-    Credits();
+    AboutPop();
     ImGui::TextUnformatted("If there are any issues message me on Discord ----> Papi#8196 ");
 }
 
@@ -162,10 +167,6 @@ void StreamFinderPlugin::WebhookGUI(bool* p_open) {
         ImGui::Text("Once you have the discord webhook link all set up, you may press the \"Test Webhook\" button to test your webhook.");
     }
     ImGui::End();
-}
-
-void StreamFinderPlugin::FileBrowserGUI(bool* p_open) {
-    ImGui::TextUnformatted("Plugin made by P as in Papi   |");
 }
 
 /// <summary>
@@ -212,38 +213,6 @@ void StreamFinderPlugin::UpdateButton()
         }
         ImGui::SameLine();
         if (ImGui::Button("No", ImVec2(120, 0))) {
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndPopup();
-    }
-}
-
-void StreamFinderPlugin::Credits()
-{
-    if (ImGui::Button("Credits", ImVec2(0, 0))) {
-        ImGui::OpenPopup("Credits");
-    }
-
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Showing some love.");
-    }
-
-    if (ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::BulletText("Testers:");
-        ImGui::Text("BumpoTheClown, Unlivedmetal,  \n"
-            "FourEyesOptic, Daboodeedabodah, stewSquared, \n"
-            "Turtle, FreezerBurn_33, rage10b, \n"
-            "QS3V3N, GettusRektus, and Sinan Enginist.");
-        ImGui::Separator();
-        ImGui::BulletText("Big thanks to:");
-        ImGui::Text("JerryTheBee, Vync, ItsBranK, Martinn, \n"
-            "BumpoTheClown, GettusRektus, eightfold, the testers \n"
-            "and the rest of the bakkesmod programming \n"
-            "community for help, ideas, and debugging!");
-        ImGui::Separator();
-        ImGui::Text("- - - Made with love by P as in Papi - - -");
-        if (ImGui::Button("Close", ImVec2(310, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -388,44 +357,6 @@ void StreamFinderPlugin::SearchButton2()
     }
 }
 
-void StreamFinderPlugin::StopRecording() {
-    ImGui::OpenPopup("Streamlink Stop");
-
-    if (ImGui::BeginPopupModal("Streamlink Stop", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::TextUnformatted("Do you wish to stop recording?");
-
-        if (ImGui::Button("Yes", ImVec2(90, 0))) {
-            STARTUPINFO startupInfo;
-            PROCESS_INFORMATION pi;
-            memset(&startupInfo, 0, sizeof(STARTUPINFO));
-            startupInfo.cb = sizeof(STARTUPINFO);
-            startupInfo.wShowWindow = false;
-            // Get path for each computer, non-user specific and non-roaming data.
-            // Append product-specific path
-            wchar_t* w_app_data_path;
-            size_t sz = 0;
-            errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
-            wchar_t tcsCommandLine[2048]{ 0 };
-            wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs\"", w_app_data_path);
-            free(w_app_data_path);
-            CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            // This solution is used to prevent the program from kicking the player out of the Rocket League window.
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("No", ImVec2(90, 0))) {
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
-    }
-}
-
 void StreamFinderPlugin::ViewSession() {
     STARTUPINFO startupInfo;
     PROCESS_INFORMATION pi;
@@ -479,6 +410,7 @@ void StreamFinderPlugin::ResumeRecording() {
             CloseHandle(pi.hThread);
             cvarManager->log("Recording resumed.");
             // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+            islivebuf();
             ImGui::CloseCurrentPopup();
         }
 
@@ -495,6 +427,50 @@ void StreamFinderPlugin::ResumeRecording() {
 /// <summary>
 /// Pop ups
 /// </summary>
+
+void StreamFinderPlugin::AboutPop()
+{
+    if (ImGui::Button("About", ImVec2(0, 0))) {
+        GetAbout();
+        ImGui::OpenPopup("About Stream Finder");
+    }
+
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Versions & Credits");
+    }
+
+    ImGui::SetNextWindowContentSize(ImVec2(500, 213));
+    if (ImGui::BeginPopupModal("About Stream Finder", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        if (ImGui::BeginChild("##About", ImVec2(0, 175), true)) {
+
+            // Titles
+            ImGui::Columns(2, "ColumnsAbout");
+
+            ImGui::Text("%s", AboutInfoBuf); ImGui::NextColumn();
+
+            // Today
+            ImGui::BulletText("Testers:");
+            ImGui::Text("BumpoTheClown, GettusRektus, Turtle, \n"
+                "FourEyesOptic, Daboodeedabodah, \n"
+                "DtewSquared, rage10b, FreezerBurn_33, \n"
+                "QS3V3N, Unlivedmetal, and Sinan Enginist.");
+            ImGui::Text("------------------------------------------------------O");
+            ImGui::BulletText("Big thanks to:");
+            ImGui::Text("JerryTheBee, Vync, ItsBranK, Martinn, \n"
+                "eightfold, All of the Testers \n"
+                "and the bakkesmod programming \n"
+                "community for help, ideas, and debugging!"); ImGui::NextColumn();
+        }
+        ImGui::EndChild();
+        ImGui::Text("  - - - - - - - - Made With Love by P as in Papi | Boom Squad Exclusive Plugin - - - - - - - - -");
+        ImGui::Separator();
+        if (ImGui::Button("Close", ImVec2(500, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+}
 
 void StreamFinderPlugin::SetPathPopup() {
     if (ImGui::Button("Path Settings", ImVec2(150, 0))) {
@@ -533,20 +509,27 @@ void StreamFinderPlugin::SetPathPopup() {
 }
 
 void StreamFinderPlugin::UpdateNotif() {
-    std::call_once(oneflag, []() {
-        if (ImGui::BeginPopupModal("Update", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::BulletText("A new update for the plugin is available, do you wish to continue?");
-            ImGui::BulletText("Requires Rocket League to restart.");
+    GetOldVer();
+    int equalOrNot = strcmp(PlugVerMain, PlugVerOld.c_str());
+    if (equalOrNot == 1) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+        ImGui::Text("UPDATE AVAILABLE");
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        if (ImGui::Button("Update Plugin", ImVec2(0, 0))) {
+            ImGui::OpenPopup("Update Notification");
+        }
 
-            if (ImGui::Button("Update", ImVec2(140, 0))) {
+        if (ImGui::BeginPopupModal("Update Notification", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::TextUnformatted("Are you sure you want to update? \n"
+                "- Requires restart");
+            if (ImGui::Button("Yes", ImVec2(120, 0))) {
                 STARTUPINFO startupInfo;
                 PROCESS_INFORMATION pi;
                 memset(&startupInfo, 0, sizeof(STARTUPINFO));
                 startupInfo.cb = sizeof(STARTUPINFO);
                 startupInfo.wShowWindow = false;
-                // Get path for each computer, non-user specific and non-roaming data.
-                // Append product-specific path
                 wchar_t* w_app_data_path;
                 size_t sz = 0;
                 errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
@@ -557,18 +540,16 @@ void StreamFinderPlugin::UpdateNotif() {
                 CloseHandle(pi.hProcess);
                 CloseHandle(pi.hThread);
                 // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+                cvarManager->log("Update Started");
                 ImGui::CloseCurrentPopup();
             }
-
             ImGui::SameLine();
-
-            if (ImGui::Button("Close", ImVec2(140, 0))) {
+            if (ImGui::Button("No", ImVec2(120, 0))) {
                 ImGui::CloseCurrentPopup();
             }
-
             ImGui::EndPopup();
         }
-    });
+    }
 }
 
 /// <summary>
@@ -744,6 +725,57 @@ void StreamFinderPlugin::RecSesBuf()
     recstrm.close();
 }
 
+void StreamFinderPlugin::islivebuf() {
+    std::string line05;
+    std::string IsThisStreamerLive;
+    std::ifstream getpathplz(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-status.txt");
+    while (getline(getpathplz, line05))
+    {
+        if (line05.empty()) {
+            break;
+        }
+        IsThisStreamerLive += line05 + '\n';
+    }
+    memset(&streamStatus, 0, _countof(streamStatus)); // init char array
+    strncpy_s(streamStatus, IsThisStreamerLive.c_str(), _countof(streamStatus)); // print text to the array/buffer
+    getpathplz.close();
+}
+
+void StreamFinderPlugin::GetOldVer() {
+    auto verpath = gameWrapper->GetDataFolder() / "StreamFinder" / "version.txt";
+    std::ifstream verstrm(verpath, std::ios::binary);
+    verstrm.unsetf(std::ios::skipws);
+    
+    std::streampos size02;
+
+    verstrm.seekg(0, std::ios::end);
+    size02 = verstrm.tellg();
+    verstrm.seekg(0, std::ios::beg);
+
+    std::istream_iterator<char> start(verstrm), end;
+    PlugVerOld.reserve(size02);
+    PlugVerOld.insert(PlugVerOld.cbegin(), start, end);
+
+    verstrm.close();
+}
+
+void StreamFinderPlugin::GetAbout() // Used for the blacklist
+{
+    std::string line07;
+    std::string aboutstr;
+    std::ifstream abouttxt(gameWrapper->GetDataFolder() / "StreamFinder" / "about.txt");
+    while (getline(abouttxt, line07))
+    {
+        if (line07.empty()) {
+            break;
+        }
+        aboutstr += line07 + '\n';
+    }
+    memset(&AboutInfoBuf, 0, _countof(AboutInfoBuf)); // init char array
+    strncpy_s(AboutInfoBuf, aboutstr.c_str(), _countof(AboutInfoBuf)); // print text to the array/buffer
+    abouttxt.close();
+}
+
 /// <summary>
 /// Functions
 /// </summary>
@@ -773,11 +805,47 @@ void StreamFinderPlugin::ProcessStatus() {
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         ImGui::Text("RECORDING IN PROGRESS!");
         ImGui::PopStyleColor();
+        ImGui::Text("%s", streamStatus);
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));
         if (ImGui::Button("Stop Recording")) {
-            StopRecording();
+            ImGui::OpenPopup("Streamlink Stop");
         }
         ImGui::PopStyleColor();
+
+        if (ImGui::BeginPopupModal("Streamlink Stop", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::TextUnformatted("Do you wish to stop recording?");
+
+            if (ImGui::Button("Yes", ImVec2(90, 0))) {
+                STARTUPINFO startupInfo;
+                PROCESS_INFORMATION pi;
+                memset(&startupInfo, 0, sizeof(STARTUPINFO));
+                startupInfo.cb = sizeof(STARTUPINFO);
+                startupInfo.wShowWindow = false;
+                // Get path for each computer, non-user specific and non-roaming data.
+                // Append product-specific path
+                wchar_t* w_app_data_path;
+                size_t sz = 0;
+                errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+                wchar_t tcsCommandLine[2048]{ 0 };
+                wsprintfW(tcsCommandLine, L"start \"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\stop-recording.vbs\"", w_app_data_path);
+                free(w_app_data_path);
+                CreateProcessW(L"C:\\Windows\\System32\\wscript.exe", tcsCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+                CloseHandle(pi.hProcess);
+                CloseHandle(pi.hThread);
+                // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No", ImVec2(90, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
         if (ImGui::Button("View Live Stream", ImVec2(150, 0))) {
             ViewSession();
         }
@@ -785,6 +853,7 @@ void StreamFinderPlugin::ProcessStatus() {
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
         ImGui::Text("No recordings in progress.");
         ImGui::PopStyleColor();
+        ImGui::Text("%s", streamStatus);
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(165, 0, 0, 255));
         if (ImGui::Button("Stop Recording")) {
             ImGui::OpenPopup("Stop Streamlink");
@@ -823,6 +892,14 @@ void StreamFinderPlugin::OpenRecDir() {
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+}
+
+void StreamFinderPlugin::FileBrowser() {
+    ImGui::TextUnformatted("Plugin made by P as in Papi   |");
+}
+
+void StreamFinderPlugin::InstallChck() {
+    ImGui::TextUnformatted("Plugin made by P as in Papi   |");
 }
 
 /// <summary>
@@ -878,7 +955,6 @@ void StreamFinderPlugin::renderLoggingTab() {
 }
 
 void StreamFinderPlugin::renderStreamlinkTab() {
-    if (fb_window)     FileBrowserGUI(&fb_window);
     if (ImGui::BeginTabItem("Streamlink")) {
         if (ImGui::BeginChild("##Recorder", ImVec2(280, 0), true)) {
             ImGui::TextUnformatted("Streamlink Recorder");
@@ -900,7 +976,8 @@ void StreamFinderPlugin::renderStreamlinkTab() {
             ImGui::TextUnformatted("-------------------------------------------------------O");
             ImGui::Text("File Path:");
             SetPathPopup();
-
+            ImGui::TextUnformatted("-------------------------------------------------------O");
+            ImGui::Text("Programs Installed:");
         }
 
         ImGui::EndChild();
@@ -910,12 +987,7 @@ void StreamFinderPlugin::renderStreamlinkTab() {
             ImGui::TextUnformatted("Video Manager");
             ImGui::Separator();
             ImGui::TextUnformatted("COMING SOON");
-            //if (ImGui::Button("File Manager")) {
-            //    fb_window = true;
-            //    if (!fb_window) {
-            //        FileBrowserGUI(&fb_window);
-            //    }
-            //}
+            
 
             if (ImGui::Button("Open Recordings Folder")) {
                 OpenRecDir();
@@ -1024,8 +1096,10 @@ void StreamFinderPlugin::renderExtrasTab() {
 
 void StreamFinderPlugin::Render()
 {
-    ImGui::SetNextWindowSizeConstraints(ImVec2(750, 550), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(950, 700), ImVec2(FLT_MAX, FLT_MAX));
 	if (ImGui::Begin(pluginNiceName_.c_str(), &isWindowOpen_, ImGuiWindowFlags_None)) {
+        ImGui::Text("%s", PlugVerMain); // Plugin Version
+        UpdateNotif();
         if (ImGui::BeginTabBar("#Tab Bar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_NoTooltip)) {
             renderLoggingTab();
             renderStreamlinkTab();
@@ -1089,12 +1163,9 @@ void StreamFinderPlugin::OnOpen()
     notlivelogbufferfunc();
     streamlogbufferfunc();
     RecSesBuf();
+    islivebuf();
 
     ComboBuf00();
-
-    //std::bind(&UpdateNotif, this);
-    //std::thread t1(oneflag);
-    //t1.join();
 
     isWindowOpen_ = true;
 }
@@ -1103,6 +1174,8 @@ void StreamFinderPlugin::OnOpen()
 void StreamFinderPlugin::OnClose()
 {
 	isWindowOpen_ = false;
+    std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-status.txt");
+    cin << " " << std::endl;
 }
 
 void StreamFinderPlugin::ToggleMenu()
