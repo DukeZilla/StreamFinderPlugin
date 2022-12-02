@@ -72,7 +72,7 @@ private:
 
 	//GUI
 	void WebhookGUI(bool* p_open);
-	void FileBrowserGUI(bool* p_open);
+	void FileBrowser();
 	void filetest();
 	void RecWindow(bool* p_open);
 
@@ -94,6 +94,10 @@ private:
 	void PathBuf00();
 	void PathBuf01();
 	void ComboBuf00();
+	void islivebuf();
+	void GetOldVer();
+	void GetAbout();
+	void UpdateNotif();
 
 	// Buttons
 	void UpdateButton();
@@ -101,8 +105,7 @@ private:
 	void ListSaveNotif();
 	void HookTestNotif();
 	void SearchButton();
-	void Credits();
-	void StopRecording();
+	void AboutPop();
 	void ResumeRecording();
 	void SearchButton2();
 	void ViewSession();
@@ -111,13 +114,10 @@ private:
 	void ProcessStatus();
 	void LoadHooks2();
 	void OpenRecDir();
+	void InstallChck();
 
-	// Popup
+	// Popups
 	void SetPathPopup();
-	void UpdateNotif();
-
-	// Threads
-	//std::thread t1();
 	
 	void Log(std::string msg);
 	bool isWindowOpen = false;
