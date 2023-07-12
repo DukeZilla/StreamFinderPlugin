@@ -72,8 +72,7 @@ private:
 
 	//GUI
 	void WebhookGUI(bool* p_open);
-	void FileBrowser();
-	void filetest();
+	//void FileBrowser();
 	void RecWindow(bool* p_open);
 
 	// Tabs
@@ -98,6 +97,7 @@ private:
 	void GetOldVer();
 	void GetAbout();
 	void UpdateNotif();
+	void RecPathBuf();
 
 	// Buttons
 	void UpdateButton();
@@ -115,9 +115,18 @@ private:
 	void LoadHooks2();
 	void OpenRecDir();
 	void InstallChck();
+	void VideoManager();
+	void RefreshVids();
+	void OpenChat();
 
 	// Popups
 	void SetPathPopup();
+	
+	// Ptr
+	std::map<std::string, std::shared_ptr<ImageWrapper>> myImage;
+	std::shared_ptr<int> previewSize_;
+	std::unique_ptr<CVarWrapper> previewSizeCVar;
+	std::shared_ptr<ImageWrapper> noPreviewImage_;
 	
 	void Log(std::string msg);
 	bool isWindowOpen = false;
@@ -128,3 +137,4 @@ private:
 #pragma endregion GUI
 };
 
+// Jesus is Lord.
