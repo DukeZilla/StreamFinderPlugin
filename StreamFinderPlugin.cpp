@@ -35,12 +35,12 @@ void StreamFinderPlugin::onLoad()
 	gameWrapper->Toast("Stream Finder Plugin", "Plugin is active!", "sfimg", 5.0, ToastType_OK);
 	}, "", PERMISSION_ALL);
 	cvarManager->registerNotifier("rec_toast", [this](std::vector<std::string> args) {
-		gameWrapper->Toast("Stream Finder Recorder", "A recording is still in progress!", "sfimg", 5.0, ToastType_Error);
+		gameWrapper->Toast("Stream Finder Plugin", "A recording is still in progress!", "sfimg", 5.0, ToastType_Error);
 		}, "", PERMISSION_ALL);
 	cvarManager->executeCommand("sf_toast");
 
 	this->LoadHooks();
-	
+
 	STARTUPINFO startupInfo;
 	PROCESS_INFORMATION pi;
 	memset(&startupInfo, 0, sizeof(STARTUPINFO));
@@ -58,6 +58,25 @@ void StreamFinderPlugin::onLoad()
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	// This solution is used to prevent the program from kicking the player out of the Rocket League window.
+
+	// For opening the stream finder directory
+	string str05 = "set shell = wscript.createobject(\"wscript.shell\")";
+	string str06 = "appData = shell.ExpandEnvironmentStrings(\"%APPDATA%\")";
+	string str07 = "file = Chr(34) & appData & \"\\bakkesmod\\bakkesmod\\data\\StreamFinder\\\" & Chr(34)";
+	string str08 = "shell.run file, 0";
+	string str09 = "wscript.quit";
+	ofstream outfile01;
+	outfile01.open("C:\\Windows\\Temp\\directory.vbs");
+	outfile01 << str05 << endl;
+	outfile01 << str06 << endl;
+	outfile01 << str07 << endl;
+	outfile01 << str08 << endl;
+	outfile01 << str09 << endl;
+	outfile01.close();
+
+	previewSize_ = std::make_shared<int>(0);
+	previewSizeCVar = std::make_unique<CVarWrapper>(cvarManager->registerCvar("bswl_preview_size", "0", "", false, true, 0, true, 2, true));
+	previewSizeCVar->bindTo(previewSize_);
 
 	//char username[UNLEN+1];
 	//DWORD username_len = UNLEN+1;
@@ -241,8 +260,11 @@ void StreamFinderPlugin::RecNotif(std::string eventName)
 
 void StreamFinderPlugin::onUnload()
 {
+	std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "file.txt");
+	cin << " " << std::endl;
 }
 
 
 // https://cplusplus.com/doc/tutorial/files/
 // https://stackoverflow.com/questions/224225/create-an-application-without-a-window
+// Jesus is Lord.
