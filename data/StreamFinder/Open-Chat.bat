@@ -1,6 +1,8 @@
 echo off
 break off
 title Open Chat
+PUSHD "%CD%"
+CD /D "%~dp0"
 goto main
 
 :main
