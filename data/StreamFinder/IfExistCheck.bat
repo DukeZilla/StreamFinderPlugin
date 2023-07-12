@@ -1,6 +1,6 @@
 @echo off
 break off
-title Crash Prevention File
+title File Check
 PUSHD "%CD%"
 CD /D "%~dp0"
 set back=%cd%
@@ -8,29 +8,31 @@ cls
 goto main
 
 :main
+:: ABOUT FILE
 echo Stream Finder Files Information > about.txt
 echo. >> about.txt
 echo ------------------------------------------------O >> about.txt
 echo. >> about.txt
 
-:: Plugin Version
+:: - Plugin Version
 for /f "usebackq delims=" %%x in (`type version.txt`) do (set plugin=%%x)
 echo "%plugin%" >> about.txt
 echo. >> about.txt
 
-:: Live Status Detector Version
+:: - Live Status Detector Version
 for /f "usebackq tokens=1,* delims=|" %%g in (`type live-status-detector.ps1 ^| findstr /ic:"Detector Version"`) do (set detect=^"Live Status%%h)
 echo %detect% >> about.txt
 echo. >> about.txt
 
-:: Logger Version
+:: - Logger Version
 for /f "usebackq tokens=1,* delims=|" %%g in (`type logger.ps1 ^| findstr /ic:"Stream FInder Logger"`) do (set log=^"Logger%%h)
 echo %log% >> about.txt
 echo. >> about.txt
 
-:: Updater Version
+:: - Updater Version
 for /f "usebackq tokens=5,6,7 delims= " %%g in (`type update.bat ^| findstr /ic:"Stream FInder Plugin Updater"`) do (set updater="%%g %%h %%i")
 echo %updater% >> about.txt
+:: END OF ABOUT FILE
 
 :: Text Files
 IF EXIST PeaceOfMind.txt (echo "Pom Exists") else (echo For logging >> PeaceOfMind.txt)
@@ -38,8 +40,9 @@ IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found to
 IF EXIST livestreamlog.txt (echo "Log Exists") else (echo Live Streamers Will be logged here. >> livestreamlog.txt)
 IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo None. >> streamlink-session.txt)
 
-:: Folder
+:: Folders
 IF EXIST Recordings (echo "Recordings folder exists") else (mkdir Recordings)
+IF EXIST Recordings\thumbnails (echo "Thumbnails exist") else (mkdir Recordings\thumbnails)
 
 :: VBS Files
 del stream-finder.vbs
@@ -84,11 +87,14 @@ echo echo "$updater" ^| Out-File -Encoding Ascii "update.bat" >> temp.ps1
 powershell.exe -executionpolicy bypass -f "temp.ps1"
 del temp.ps1
 
-:: Path
+:: Recordings path
+cd Recordings
+echo %cd% > "%back%\rec-path.txt"
+cd ..
+
+:: Updating file paths
 cd \ & where /r . streamlink.exe > "%back%\Path-00.txt" & cd %back% & findstr /ic:"streamlink" "Path-00.txt" > Path-streamlink.txt
 cd \ & where /r . ffmpeg.exe > "%back%\Path-01.txt" & cd %back% & findstr /ic:"streamlink" "Path-01.txt" > Path-ffmpeg.txt
 del Path-00.txt
 del Path-01.txt
-
-taskkill /im cmd.exe -f
 exit

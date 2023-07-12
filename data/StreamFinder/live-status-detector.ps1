@@ -1,15 +1,20 @@
 # ESSENTIAL COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
-# By P as in Papi
+# DO NOT DELETE
 
-echo "Stream Finder | Detector Version 1.58"
-
-Import-Module C:Twitch-Token.psm1
-
-# Discord webhook linke to variable
 $p = (pwd).path
 $file = type Path-streamlink.txt
 $global:streamlink_path = (Get-Item $file).directoryname
 cd $p
+
+start-transcript -path "$p\detector-transcript.txt"
+echo " "
+
+echo "Stream Finder | Detector Version 1.60"
+echo "Created by P as in Papi"
+
+Import-Module C:Twitch-Token.psm1
+
+# Discord webhook linke to variable
 
 $discord_webhook = gc $p\discord-webhook.txt
 $test = gc $p\test-webhook.txt -erroraction silentlycontinue
@@ -119,21 +124,23 @@ function nameloop {
 		exit
 	}
 	
-	$name = $name.replace(" ", "_")
-	
 	if ($name -match "ttv") { # Split "ttv" from player name
+		$name = $name -split "ttv "
 		$name = $name -split "ttv"
 		echo 'ttv name split'
 	}
 	
 	if ($name -match "t.tv") { # Split "t.tv" from player name
+		$name = $name -split "t.tv "
 		$name = $name -split "t.tv"
 		echo 't.tv name split'
 	}
-
-		$name = $name -replace('-', '_') # Changing Dashes to underscores
-		$name = $name -replace ('\W', '') # Removing common special characters
-		$global:specChar = $name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
+	
+	$name = $name.replace(" ", "_")
+	$name = $name -replace('-', '_') # Changing Dashes to underscores
+	$name = $name -replace ('\W', '') # Removing common special characters
+	$global:specChar = $name -replace '[^a-zA-Z0-9\/.!@#$%^&*()-_=+?|;:]', '' # Removing unique special characters
+	echo "Special characters processed"
 
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
@@ -161,7 +168,7 @@ function nameloop {
 		nameloop
 	}
 	
-	echo "Tested name = ""$name"""
+	echo "Tested name = ""$name""" # Name sample for searching
 
 	$key00 = "null"
 	SessionBlacklist
