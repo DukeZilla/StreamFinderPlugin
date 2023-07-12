@@ -16,14 +16,14 @@ using namespace std;
 // Plugin Settings Window code here
 
 // PLUGIN VERSION
-static char PlugVerMain[1024] = "Plugin Version 1.24 | Build 621";
+static char PlugVerMain[1024] = "Plugin Version 1.30 | Build 670";
 
 // Buffers
 static char bufferBoi[1024]; // For the discord webhook
 static char buffer00[1024]; // For the Permanent blacklist
 static char buffer01[1024]; // For the Lobby list
 static char buffer05[1024]; // For the Search Bar
-static char link00[1024] = "https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
+static char link00[1024] = "https://github.com/streamlink/windows-builds/releases";
 static char link01[1024] = "https://www.videolan.org/vlc/";
 static char streamlinkBuf00[1024]; // For the Streamlink recording status
 static char path00[1024]; // For the streamlink path file
@@ -32,6 +32,18 @@ static char TwtchUsrs[1024]; // Plugin version from txt file
 static char comboNames00[1024]; // For the resume recording list combo
 static char streamStatus[1024]; // Is the streamer live?
 static char AboutInfoBuf[1024]; // For about pop up
+static char RecPath[1024]; // Recordings path
+static char VidName[1024]; // Video renaming
+
+// Video Manager Text Strings
+static std::string StartVidTxt = "Start Video";
+static std::string CopyVidTxt = "Copy";
+static std::string MoveVidTxt = "Move";
+static std::string RenVidTxt = "Rename";
+static std::string DelVidTxt = "Delete";
+static std::string CloudTxt = "Upload to Cloud";
+static std::string ffmpegTxt = "Convert Format";
+static std::string InfoVidTxt = "Information";
 
 // Pointers
 static std::vector<char*> tokens;
@@ -61,6 +73,9 @@ static bool YouNeedToUpdate = false;
 // int
 static int selectednames = 0;
 static int callcount = 0;
+
+// Name spaces
+namespace fs = std::filesystem;
 
 std::string StreamFinderPlugin::GetPluginName() {
 	return pluginNiceName_;
@@ -138,7 +153,7 @@ void StreamFinderPlugin::RenderSettings() {
     ImGui::TextUnformatted("Plugin made by P as in Papi   |");
     ImGui::SameLine();
     AboutPop();
-    ImGui::TextUnformatted("If there are any issues message me on Discord ----> Papi#8196 ");
+    ImGui::TextUnformatted("If you have any issues or feedback message me on Discord ----> papi.gg ");
 }
 
 /// <summary>
@@ -151,7 +166,9 @@ void StreamFinderPlugin::WebhookGUI(bool* p_open) {
         ImGui::TextUnformatted("DISCORD WEBHOOK LINK");
         ImGui::Separator();
         ImGui::TextUnformatted("To receive notifications of live streamers on Discord, create a channel webhook and paste it here:");
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
         ImGui::InputText("###Link", bufferBoi, _countof(bufferBoi));
+        ImGui::PopStyleColor();
         DiscSaveNotif();
         ImGui::SameLine();
         HookTestNotif();
@@ -160,11 +177,11 @@ void StreamFinderPlugin::WebhookGUI(bool* p_open) {
         ImGui::Separator();
         ImGui::Text("DISCORD WEBHOOK:");
         ImGui::BulletText("- How to set up the discord webhook -");
-        ImGui::BulletText("1.) Open Discord and head to your personal server, if you don't have one, start your own server.");
-        ImGui::BulletText("2.) Once you are in your server, right click on the channel you wish to receive stream notifications with and click \"Edit Channel\"");
-        ImGui::BulletText("3.) Click \"Intergrations\" and then click \"Create Webhook\" Once you have created your webhook,\n"
+        ImGui::BulletText("1.) Open Discord and head to your personal server, or create one.");
+        ImGui::BulletText("2.) Open your server, right click on a channel and click \"Edit Channel\"");
+        ImGui::BulletText("3.) Click \"Intergrations,\" then click \"Create Webhook\" Once you have created your webhook,\n"
             "copy the webhook URL and paste it in the text box above.");
-        ImGui::Text("Once you have the discord webhook link all set up, you may press the \"Test Webhook\" button to test your webhook.");
+        ImGui::Text("Once the setup is complete, you can press the \"Test Webhook\" button to test your webhook.");
     }
     ImGui::End();
 }
@@ -287,7 +304,7 @@ void StreamFinderPlugin::HookTestNotif()
 
     if (ImGui::BeginPopupModal("Webhook Test", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::TextUnformatted("Webhook test initiated!");
+        ImGui::TextUnformatted("Webhook test initiated! Notification should be sent in less than 10 seconds.");
         if (ImGui::Button("Okay.", ImVec2(135, 0))) {
             ImGui::CloseCurrentPopup();
         }
@@ -355,27 +372,6 @@ void StreamFinderPlugin::SearchButton2()
         // This solution is used to prevent the program from kicking the player out of the Rocket League window.
         cvarManager->log("Stream Detector Test Launched.");
     }
-}
-
-void StreamFinderPlugin::ViewSession() {
-    STARTUPINFO startupInfo;
-    PROCESS_INFORMATION pi;
-    memset(&startupInfo, 0, sizeof(STARTUPINFO));
-    startupInfo.cb = sizeof(STARTUPINFO);
-    startupInfo.wShowWindow = false;
-    // Get path for each computer, non-user specific and non-roaming data.
-    // Append product-specific path
-    wchar_t* w_app_data_path;
-    size_t sz = 0;
-    errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
-    wchar_t tcsCommandLine[2048]{ 0 };
-    wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\View-Recording.bat""", w_app_data_path);
-    free(w_app_data_path);
-    CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    // This solution is used to prevent the program from kicking the player out of the Rocket League window.
-    OpenRecDir();
 }
 
 void StreamFinderPlugin::ResumeRecording() {
@@ -776,9 +772,62 @@ void StreamFinderPlugin::GetAbout() // Used for the blacklist
     abouttxt.close();
 }
 
+void StreamFinderPlugin::RecPathBuf() // Recordings path
+{
+    std::string recstring;
+    std::ifstream recdir(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-path.txt");
+    getline(recdir, recstring);
+    // do outside of render func
+    memset(&RecPath, 0, _countof(RecPath)); // init char array
+    strncpy_s(RecPath, recstring.c_str(), _countof(RecPath)); // print text to the array/buffer
+    recdir.close();
+}
+
 /// <summary>
 /// Functions
 /// </summary>
+/// 
+
+void StreamFinderPlugin::OpenChat() {
+    STARTUPINFO startupInfo;
+    PROCESS_INFORMATION pi;
+    memset(&startupInfo, 0, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = false;
+    // Get path for each computer, non-user specific and non-roaming data.
+    // Append product-specific path
+    wchar_t* w_app_data_path;
+    size_t sz = 0;
+    errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+    wchar_t tcsCommandLine[2048]{ 0 };
+    wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\Open-Chat.bat""", w_app_data_path);
+    free(w_app_data_path);
+    CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    // This solution is used to prevent the program from kicking the player out of the Rocket League window.
+}
+
+void StreamFinderPlugin::ViewSession() {
+    STARTUPINFO startupInfo;
+    PROCESS_INFORMATION pi;
+    memset(&startupInfo, 0, sizeof(STARTUPINFO));
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = false;
+    // Get path for each computer, non-user specific and non-roaming data.
+    // Append product-specific path
+    wchar_t* w_app_data_path;
+    size_t sz = 0;
+    errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+    wchar_t tcsCommandLine[2048]{ 0 };
+    wsprintfW(tcsCommandLine, L"start /c ""%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\View-Recording.bat""", w_app_data_path);
+    free(w_app_data_path);
+    CreateProcessW(L"C:\\Windows\\System32\\cmd.exe", tcsCommandLine, nullptr, nullptr, TRUE, 0, nullptr, nullptr, (LPSTARTUPINFOW)&startupInfo, &pi);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    // This process starting solution is used to prevent the program from kicking the player out of the Rocket League window.
+    OpenRecDir();
+}
 
 static bool IsProcessRunning(const wchar_t* processName) {
     bool exists = false;
@@ -807,7 +856,7 @@ void StreamFinderPlugin::ProcessStatus() {
         ImGui::PopStyleColor();
         ImGui::Text("%s", streamStatus);
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));
-        if (ImGui::Button("Stop Recording")) {
+        if (ImGui::Button("Stop")) {
             ImGui::OpenPopup("Streamlink Stop");
         }
         ImGui::PopStyleColor();
@@ -846,8 +895,14 @@ void StreamFinderPlugin::ProcessStatus() {
             ImGui::EndPopup();
         }
 
-        if (ImGui::Button("View Live Stream", ImVec2(150, 0))) {
+        ImGui::SameLine();
+
+        if (ImGui::Button("View Live Stream", ImVec2(90, 0))) {
             ViewSession();
+        }
+
+        if (ImGui::Button("Visit Streamer", ImVec2(150, 0))) {
+            OpenChat();
         }
     } else {
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
@@ -855,7 +910,7 @@ void StreamFinderPlugin::ProcessStatus() {
         ImGui::PopStyleColor();
         ImGui::Text("%s", streamStatus);
         ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(165, 0, 0, 255));
-        if (ImGui::Button("Stop Recording")) {
+        if (ImGui::Button("Stop")) {
             ImGui::OpenPopup("Stop Streamlink");
         }
         ImGui::PopStyleColor();
@@ -867,7 +922,7 @@ void StreamFinderPlugin::ProcessStatus() {
             }
             ImGui::EndPopup();
         }
-        if (ImGui::Button("View Recent Recording", ImVec2(150, 0))) {
+        if (ImGui::Button("View Recent", ImVec2(150, 0))) {
             ViewSession();
         }
     }
@@ -894,13 +949,178 @@ void StreamFinderPlugin::OpenRecDir() {
     // This solution is used to prevent the program from kicking the player out of the Rocket League window.
 }
 
-void StreamFinderPlugin::FileBrowser() {
-    ImGui::TextUnformatted("Plugin made by P as in Papi   |");
-}
-
 void StreamFinderPlugin::InstallChck() {
     ImGui::TextUnformatted("Plugin made by P as in Papi   |");
 }
+
+void StreamFinderPlugin::RefreshVids() {
+    static float padding = 16.0f;
+    static float thumbnailSize = 128.0f;
+    float cellSize = thumbnailSize + padding;
+
+    float panelWidth = ImGui::GetContentRegionAvail().x;
+
+    int imgWidth;
+    int imgHeight;
+    if (*previewSize_ == 0) {
+        imgWidth = 192;
+        imgHeight = 108;
+    }
+    else if (*previewSize_ == 1) {
+        imgWidth = 240;
+        imgHeight = 135;
+    }
+    else {
+        imgWidth = 288;
+        imgHeight = 162;
+    }
+    const int gridChildHeight = imgHeight + 56;
+
+    const int moveButtonPadding = 8;
+
+    wchar_t* w_app_data_path;
+    size_t sz = 0;
+    errno_t err = _wdupenv_s(&w_app_data_path, &sz, L"APPDATA");
+    wchar_t ThumbPath[2048]{ 0 };
+    wchar_t RecPath[2048]{ 0 };
+    wsprintfW(ThumbPath, L"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\Recordings\\thumbnails", w_app_data_path);
+    wsprintfW(RecPath, L"%s\\bakkesmod\\bakkesmod\\data\\StreamFinder\\Recordings", w_app_data_path);
+    free(w_app_data_path);
+
+    for (const auto& entry01 : fs::directory_iterator(ThumbPath)) {
+        const auto& path01 = entry01.path();
+        std::string imgFile = path01.filename().string();
+        std::string filenameStr = '"' + imgFile + '"';
+        std::ofstream bl(gameWrapper->GetDataFolder() / "StreamFinder" / "a-path.txt");
+        bl << ThumbPath << std::endl;
+        bl << filenameStr << std::endl;
+        bl.close();
+
+        ImGui::BeginGroup();
+        
+        const auto& myImage = std::make_shared<ImageWrapper>(gameWrapper->GetDataFolder() / "StreamFinder" / "Recordings" / "thumbnails" / filenameStr, true, true);
+
+        if (auto pTex = myImage->GetImGuiTex()) {
+            auto rect = myImage->GetSizeF();
+            ImGui::Image(pTex, { (float)imgWidth, (float)imgHeight });
+        }
+
+        ImGui::SameLine((float)moveButtonPadding);
+
+        ImGui::Text(imgFile.c_str());
+        if (ImGui::Button("View", ImVec2(-FLT_MIN, 0.0f))) {
+            OpenRecDir();
+        }
+
+        if (ImGui::BeginPopupContextItem("Video Context Menu"))
+        {
+            if (ImGui::Selectable(StartVidTxt.c_str())) // "Start Video"
+            {
+                ViewSession();
+            }
+
+            if (ImGui::Selectable(CopyVidTxt.c_str())) // "Copy"
+            {
+                OpenRecDir();
+            }
+
+            if (ImGui::Selectable(MoveVidTxt.c_str())) // "Move"
+            {
+                OpenRecDir();
+            }
+
+            if (ImGui::Selectable(RenVidTxt.c_str())) // "Rename"
+            {
+                if (ImGui::BeginPopupModal("Rename Video", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    ImGui::BulletText("Video Name:");
+                    ImGui::InputText("##VidName", VidName, _countof(VidName));
+
+                    ImGui::Separator();
+
+                    if (ImGui::Button("Save", ImVec2(140, 0))) {
+                        std::ofstream videopath(gameWrapper->GetDataFolder() / "StreamFinder" / "Recordings" / "test.txt");
+                        videopath << std::string(path00) << endl;
+                        videopath.close();
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::SameLine();
+
+                    if (ImGui::Button("Close", ImVec2(140, 0))) {
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
+                }
+            }
+
+            if (ImGui::Selectable(DelVidTxt.c_str())) // "Delete"
+            {
+                OpenRecDir();
+            }
+
+            if (ImGui::Selectable(CloudTxt.c_str())) // "Upload To Cloud"
+            {
+                OpenRecDir();
+            }
+
+            if (ImGui::Selectable(ffmpegTxt.c_str())) // "Convert Format"
+            {
+                OpenRecDir();
+            }
+
+            if (ImGui::Selectable(InfoVidTxt.c_str())) // "Video Information"
+            {
+                OpenRecDir();
+            }
+
+            ImGui::EndPopup();
+        }
+        ImGui::EndGroup();
+    }
+}
+
+void StreamFinderPlugin::VideoManager() {
+    ImGui::Text("Video Manager");
+    ImGui::Separator();
+    /*
+    int newPreviewSize = *previewSize_;
+    ImGui::TextUnformatted("Preview size: "); ImGui::SameLine();
+    ImGui::RadioButton("small", &newPreviewSize, 0); ; ImGui::SameLine();
+    ImGui::RadioButton("medium", &newPreviewSize, 1); ; ImGui::SameLine();
+    ImGui::RadioButton("large", &newPreviewSize, 2);
+    if (newPreviewSize != *previewSize_) {
+        *previewSize_ = newPreviewSize;
+        previewSizeCVar->setValue(newPreviewSize);
+    }
+    */
+    ImGui::Text("Recordings Directory Path");
+    ImGui::InputText("###RecPath", RecPath, _countof(RecPath));
+
+    if (ImGui::Button("Save", ImVec2(140, 0))) {
+        std::ofstream recpath(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-path.txt");
+        recpath << std::string(RecPath) << endl;
+        recpath.close();
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Open Recordings Folder")) {
+        OpenRecDir();
+    }
+
+    /*
+    ImGui::SameLine();
+
+    if (ImGui::Button("Refresh List", ImVec2(140, 0))) {
+        RefreshVids();
+    }
+    */
+}
+
+
 
 /// <summary>
 /// Rendered Tabs
@@ -908,28 +1128,26 @@ void StreamFinderPlugin::InstallChck() {
 
 void StreamFinderPlugin::renderLoggingTab() {
     if (ImGui::BeginTabItem("Logging")) {
+        ImGui::TextUnformatted("Stream Finder Log Files");
+        ImGui::SameLine();
+
+        if (ImGui::Button("Refresh logs")) {
+            buffer02.clear();
+            buffer03.clear();
+            buffer04.clear();
+
+            livelogbufferfunc();
+            notlivelogbufferfunc();
+            streamlogbufferfunc();
+        }
+
+        ImGui::SameLine();
+
+        SearchButton2();
+
+        ImGui::Separator();
+
         if (ImGui::BeginChild("##Logging", ImVec2(0, 0), true)) {
-            ImGui::TextUnformatted("Stream Finder Log Files");
-            ImGui::SameLine();
-
-            if (ImGui::Button("Refresh logs")) {
-                buffer02.clear();
-                buffer03.clear();
-                buffer04.clear();
-
-                livelogbufferfunc();
-                notlivelogbufferfunc();
-                streamlogbufferfunc();
-            }
-
-            ImGui::SameLine();
-
-            SearchButton2();
-
-            ImGui::Separator();
-
-            if (ImGui::CollapsingHeader("Stream Finder Logs", ImGuiTreeNodeFlags_DefaultOpen)) {
-
                 // Titles
                 ImGui::Columns(3, "Columns");
                 ImGui::Separator();
@@ -938,7 +1156,7 @@ void StreamFinderPlugin::renderLoggingTab() {
                 ImGui::Text("Streamers Caught Today"); ImGui::NextColumn();
                 ImGui::Separator();
 
-                // All Stream
+                // All Streamers
                 ImGui::Text("%s", buffer04.c_str()); ImGui::NextColumn();
 
                 // Current lobby
@@ -947,7 +1165,6 @@ void StreamFinderPlugin::renderLoggingTab() {
                 // Today
                 ImGui::Text("%s", buffer03.c_str()); ImGui::NextColumn();
                 ImGui::Separator();
-            }
         }
         ImGui::EndChild();
         ImGui::EndTabItem();
@@ -963,9 +1180,9 @@ void StreamFinderPlugin::renderStreamlinkTab() {
 
             //}
             ImGui::TextUnformatted("-------------------------------------------------------O");
-            ImGui::Text("Streamlink Status:");
+            ImGui::Text("Recorder:");
             ImGui::SameLine();
-            ProcessStatus();
+            ProcessStatus(); // This function also contains the Stop Recording ffbutton
             ImGui::TextUnformatted("-------------------------------------------------------O");
             ImGui::Text("Resume Last Session:");
             ResumeRecording();
@@ -977,21 +1194,14 @@ void StreamFinderPlugin::renderStreamlinkTab() {
             ImGui::Text("File Path:");
             SetPathPopup();
             ImGui::TextUnformatted("-------------------------------------------------------O");
-            ImGui::Text("Programs Installed:");
+            //ImGui::Text("Programs Installed:");
         }
 
         ImGui::EndChild();
         ImGui::SameLine();
 
         if (ImGui::BeginChild("##Recordings", ImVec2(0, 0), true)) {
-            ImGui::TextUnformatted("Video Manager");
-            ImGui::Separator();
-            ImGui::TextUnformatted("COMING SOON");
-            
-
-            if (ImGui::Button("Open Recordings Folder")) {
-                OpenRecDir();
-            }
+            VideoManager();
 
             ImGui::TextUnformatted("-------------------------------------------------------------------------O");
 
@@ -1001,20 +1211,20 @@ void StreamFinderPlugin::renderStreamlinkTab() {
                 ImGui::Text("STREAMLINK:");
                 ImGui::Text("Install Streamlink to automatically record Twitch Streams in the background with no performance impact!");
                 ImGui::Text("- How to install Streamlink -");
-                ImGui::BulletText("Click the website below and download the setup file. (Recommend \"streamlink-5.0.1-1-py310-x86_64.exe\")");
+                ImGui::BulletText("Click the website below and download the setup file. (Recommended file that ends with \"py311-x86_64.exe\")");
                 if (ImGui::Button(link00)) {
-                    const wchar_t* url00 = L"https://github.com/streamlink/windows-builds/releases/tag/5.0.1-1";
+                    const wchar_t* url00 = L"https://github.com/streamlink/windows-builds/releases";
                     const wchar_t* action00 = L"Open";
                     ShellExecute(NULL, action00, url00, NULL, NULL, SW_SHOWNORMAL);
                 }
-                ImGui::BulletText("After the setup, you should be all set... it's that quick!");
+                ImGui::BulletText("After the setup, you should be all set... it's that easy!");
                 ImGui::Text("- Useful Information -");
                 ImGui::BulletText("With Streamlink, you can record streams with no resource-heavy recorders or with websites, it will \n"
-                "record these twitch streams in the background during your gameplay when a streamer is found!");
+                "record these twitch streams in the background during your gameplay once a streamer is found!");
                 ImGui::BulletText("When a recording is in session it will tell you in the status in the \"Streamlink Recorder\" block, \n"
                 "or a bakkesmod toast (notification) will pop up on the top right hand of your screen. \n"
                 "Be sure to have bakkesmod notifications turned on!");
-                ImGui::BulletText("The plugin will also use FFmpeg to convert your recordings to mp4, which comes with streamlink. \n"
+                ImGui::BulletText("The plugin will also use FFmpeg to convert your recordings to mp4, which is useful for editing videos. \n"
                 "This process will happen after you stop recording. You can configure the file paths in the \"File Path Settings\". \n"
                 "These paths will still be automatically configured for you.");
                 ImGui::BulletText("Recommended that you download VLC media player to view these recordings, VLC will allow you to view streams live.");
@@ -1059,17 +1269,15 @@ void StreamFinderPlugin::renderBlacklistsTab() {
 
             ImGui::Separator();
 
-            if (ImGui::CollapsingHeader("Help")) {
-                ImGui::Text("STREAM FINDER 101");
-                ImGui::Separator();
-                ImGui::Text("BLACKLIST INFO:");
-                ImGui::BulletText("- Information on blacklists -");
-                ImGui::BulletText("Blacklist: Whatever names are included in this list will be completely ignored by the program indefinitely,.");
-                ImGui::BulletText("Be sure the names are typed exactly the same as the name you see on their nameplate.");
-                ImGui::BulletText("The \"Current Lobby\" list refreshes everytime you toggle the GUI, or by pressing the refresh button.");
-                ImGui::BulletText("Side note: All bot names have been blacklisted by default to prevent false positives.");
-                ImGui::Separator();
-            }
+            ImGui::Text("STREAM FINDER 101");
+            ImGui::Separator();
+            ImGui::Text("BLACKLIST INFO:");
+            ImGui::BulletText("- Information on blacklists -");
+            ImGui::BulletText("Blacklist: Whatever names are included in this list will be completely ignored by the program indefinitely,.");
+            ImGui::BulletText("Be sure the names are typed exactly the same as the name you see on their nameplate.");
+            ImGui::BulletText("The \"Current Lobby\" list refreshes everytime you toggle the GUI, or by pressing the refresh button.");
+            ImGui::BulletText("Side note: All bot names have been blacklisted by default to prevent false positives.");
+            ImGui::Separator();
         }
         ImGui::EndChild();
         ImGui::EndTabItem();
@@ -1086,6 +1294,9 @@ void StreamFinderPlugin::renderExtrasTab() {
             SearchButton();
 
             ImGui::TextUnformatted("-------------------------------------------------------------------------O");
+            if (ImGui::Button("Open Stream Finder Folder")) {
+                system("C:\\Windows\\Temp\\directory.vbs");
+            }
         }
         ImGui::EndChild();
         ImGui::EndTabItem();
@@ -1164,6 +1375,7 @@ void StreamFinderPlugin::OnOpen()
     streamlogbufferfunc();
     RecSesBuf();
     islivebuf();
+    RecPathBuf();
 
     ComboBuf00();
 
@@ -1182,3 +1394,5 @@ void StreamFinderPlugin::ToggleMenu()
 {
     cvarManager->executeCommand("togglemenu " + GetMenuName());
 }
+
+// Jesus is Lord.
