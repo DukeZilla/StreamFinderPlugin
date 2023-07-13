@@ -1,14 +1,9 @@
 # Stream Finder Plugin
 
-A Rocket League Bakkesmod plugin that can detect live twitch streamers in your matches!
+Ladies and Boomermen, I present to you the plugin that can detect and capture live twitch streamers in your Rocket League matches! Yes you heard right, a stream detector.
 
-The program will gather the player names from the server, search all the names on the twitch database, and if the program picks up a live streamer a discord notification will be sent to you via webhook link!
+This plugin gathers the player names in your lobby, searches them up on the twitch database, and will be able to find a live streamer in your lobbies. The program will also be able to record the streams in the background during gameplay with no performance impact whatsoever!
 
-The program uses several search methods to increase the probability of finding a live streamer that is in your match.
-The live stream finding event will also be logged in a text file.
-
-So in case you're wondering if that "TTV" is live? Well you got it, or if that "Player" is also live? Well damn you got that too!
-
-Stream finder plugin.
+Ever wondered if that "TTV" is live? Well you got it! Or if that random player is live too? Well dammit you got that too!
 
 **~DukeZilla 2022** (aka P as in Papi)
