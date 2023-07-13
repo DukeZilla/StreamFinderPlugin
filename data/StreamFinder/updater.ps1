@@ -1,3 +1,8 @@
+$p = (pwd).path
+cd $p
+start-transcript -path "$p\transcript-updater.txt"
+echo " "
+
 write-host "Logs:"
 $rl = (get-process -name RocketLeague -erroraction silentlycontinue).path
 cmd.exe /c taskkill /t /im rocketleague.exe /f
