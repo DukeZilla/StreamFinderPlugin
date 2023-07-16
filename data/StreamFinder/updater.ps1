@@ -1,6 +1,6 @@
 $p = (pwd).path
 cd $p
-start-transcript -path "$p\transcript-updater.txt"
+start-transcript -path "$p\cache\transcript-updater.txt"
 echo " "
 
 write-host "Logs:"
@@ -46,6 +46,8 @@ copy "Check-Update.bat" "$p\data\StreamFinder"
 write-host "Copied Check-Update.bat"
 copy "Open-Chat.bat" "$p\data\StreamFinder"
 write-host "Copied open-chat.bat"
+copy "Cleaner.bat" "$p\data\StreamFinder"
+write-host "Copied Cleaner.bat"
 copy "version.txt" "$p\data\StreamFinder"
 write-host "Copied version.txt"
 cd ..
