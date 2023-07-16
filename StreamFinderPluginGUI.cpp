@@ -16,7 +16,7 @@ using namespace std;
 // Plugin Settings Window code here
 
 // PLUGIN VERSION
-static char PlugVerMain[1024] = "Plugin Version 1.30 | Build 670";
+static char PlugVerMain[1024] = "Plugin Version 1.30.1 | Build 671";
 
 // Buffers
 static char bufferBoi[1024]; // For the discord webhook
@@ -239,7 +239,7 @@ void StreamFinderPlugin::UpdateButton()
 void StreamFinderPlugin::DiscSaveNotif()
 {
     if (ImGui::Button("Save Changes", ImVec2(0, 0))) {
-        std::ofstream webhookchange(gameWrapper->GetDataFolder() / "StreamFinder" / "discord-webhook.txt");
+        std::ofstream webhookchange(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "discord-webhook.txt");
         webhookchange << std::string(bufferBoi) << endl;
         webhookchange.close();
         ImGui::OpenPopup("Discord Webhook");
@@ -258,7 +258,7 @@ void StreamFinderPlugin::DiscSaveNotif()
 void StreamFinderPlugin::ListSaveNotif()
 {
     if (ImGui::Button("Save Changes", ImVec2(0, 0))) {
-        std::ofstream permachange(gameWrapper->GetDataFolder() / "StreamFinder" / "permanent-blacklist.txt");
+        std::ofstream permachange(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "permanent-blacklist.txt");
         permachange << std::string(buffer00) << endl;
         permachange.close();
         ImGui::OpenPopup("Blacklist");
@@ -278,7 +278,7 @@ void StreamFinderPlugin::HookTestNotif()
 {
     if (ImGui::Button("Test Webhook", ImVec2(0, 0))) {
         // For initiating the stream detector
-        std::ofstream test(gameWrapper->GetDataFolder() / "StreamFinder" / "test-webhook.txt");
+        std::ofstream test(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "test-webhook.txt");
         test << "Test-Webhook" << std::endl;
         test.close();
         STARTUPINFO startupInfo;
@@ -305,7 +305,7 @@ void StreamFinderPlugin::HookTestNotif()
     if (ImGui::BeginPopupModal("Webhook Test", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Webhook test initiated! Notification should be sent in less than 10 seconds.");
-        if (ImGui::Button("Okay.", ImVec2(135, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(410, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -315,7 +315,7 @@ void StreamFinderPlugin::HookTestNotif()
 void StreamFinderPlugin::SearchButton()
 {
     if (ImGui::Button("Search")) {
-        std::ofstream search(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
+        std::ofstream search(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "names.txt");
         search << "Search-Request" << std::endl;
         search << std::string(buffer05) << std::endl;
         search.close();
@@ -343,7 +343,7 @@ void StreamFinderPlugin::SearchButton()
     if (ImGui::BeginPopupModal("Search", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::TextUnformatted("Search has started");
-        if (ImGui::Button("Okay.", ImVec2(130, 0))) {
+        if (ImGui::Button("Okay.", ImVec2(110, 0))) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -485,10 +485,10 @@ void StreamFinderPlugin::SetPathPopup() {
         ImGui::Separator();
 
         if (ImGui::Button("Save", ImVec2(140, 0))) {
-            std::ofstream streamlinkpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-streamlink.txt");
+            std::ofstream streamlinkpath(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "Path-streamlink.txt");
             streamlinkpath << std::string(path00) << endl;
             streamlinkpath.close();
-            std::ofstream ffmpegpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-ffmpeg.txt");
+            std::ofstream ffmpegpath(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "Path-ffmpeg.txt");
             ffmpegpath << std::string(path01) << endl;
             ffmpegpath.close();
             ImGui::CloseCurrentPopup();
@@ -555,7 +555,7 @@ void StreamFinderPlugin::UpdateNotif() {
 void StreamFinderPlugin::discbufferfunc() // Used for the discord tab
 {
     std::string discstring;
-    std::ifstream webhook(gameWrapper->GetDataFolder() / "StreamFinder" / "discord-webhook.txt");
+    std::ifstream webhook(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "discord-webhook.txt");
     getline(webhook, discstring);
     // do outside of render func
     memset(&bufferBoi, 0, _countof(bufferBoi)); // init char array
@@ -567,7 +567,7 @@ void StreamFinderPlugin::permabufferfunc() // Used for the blacklist
 {
     std::string line00;
     std::string permastring;
-    std::ifstream perma(gameWrapper->GetDataFolder() / "StreamFinder" / "permanent-blacklist.txt");
+    std::ifstream perma(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "permanent-blacklist.txt");
     while (getline(perma, line00))
     {
         if (line00.empty()) {
@@ -584,7 +584,7 @@ void StreamFinderPlugin::tempbufferfunc() // Used for the "Current Lobby List"
 {
     std::string line01;
     std::string tempstring;
-    std::ifstream temp(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
+    std::ifstream temp(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "names.txt");
     while (getline(temp, line01))
     {
         if (line01.empty()) {
@@ -601,7 +601,7 @@ void StreamFinderPlugin::PathBuf00()
 {
     std::string line02;
     std::string pathstr;
-    std::ifstream ifpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-streamlink.txt");
+    std::ifstream ifpath(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "Path-streamlink.txt");
     while (getline(ifpath, line02))
     {
         if (line02.empty()) {
@@ -618,7 +618,7 @@ void StreamFinderPlugin::PathBuf01()
 {
     std::string line03;
     std::string path2str;
-    std::ifstream ifpath2(gameWrapper->GetDataFolder() / "StreamFinder" / "Path-ffmpeg.txt");
+    std::ifstream ifpath2(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "Path-ffmpeg.txt");
     while (getline(ifpath2, line03))
     {
         if (line03.empty()) {
@@ -634,7 +634,7 @@ void StreamFinderPlugin::PathBuf01()
 void StreamFinderPlugin::ComboBuf00()
 {
     std::string namestr;
-    std::ifstream listpath(gameWrapper->GetDataFolder() / "StreamFinder" / "Combo-Info00.txt");
+    std::ifstream listpath(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "Combo-Info00.txt");
     getline(listpath, namestr);
     listpath.close();
     char* token = std::strtok(namestr.data(), ".");
@@ -647,7 +647,7 @@ void StreamFinderPlugin::ComboBuf00()
 
 void StreamFinderPlugin::notlivelogbufferfunc()
 {
-    auto logpath = gameWrapper->GetDataFolder() / "StreamFinder" / "PeaceOfMind.txt";
+    auto logpath = gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "PeaceOfMind.txt";
     std::ifstream logstrm(logpath, std::ios::binary);
     logstrm.unsetf(std::ios::skipws);
 
@@ -666,7 +666,7 @@ void StreamFinderPlugin::notlivelogbufferfunc()
 
 void StreamFinderPlugin::livelogbufferfunc()
 {
-    auto logpath01 = gameWrapper->GetDataFolder() / "StreamFinder" / "Session-Blacklist.txt";
+    auto logpath01 = gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "Session-Blacklist.txt";
     std::ifstream logstrm01(logpath01, std::ios::binary);
     logstrm01.unsetf(std::ios::skipws);
 
@@ -685,7 +685,7 @@ void StreamFinderPlugin::livelogbufferfunc()
 
 void StreamFinderPlugin::streamlogbufferfunc()
 {
-    auto logpath02 = gameWrapper->GetDataFolder() / "StreamFinder" / "livestreamlog.txt";
+    auto logpath02 = gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "livestreamlog.txt";
     std::ifstream logstrm02(logpath02, std::ios::binary);
     logstrm02.unsetf(std::ios::skipws);
 
@@ -704,7 +704,7 @@ void StreamFinderPlugin::streamlogbufferfunc()
 
 void StreamFinderPlugin::RecSesBuf()
 {
-    auto recpath = gameWrapper->GetDataFolder() / "StreamFinder" / "streamlink-session.txt";
+    auto recpath = gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "streamlink-session.txt";
     std::ifstream recstrm(recpath, std::ios::binary);
     recstrm.unsetf(std::ios::skipws);
 
@@ -724,7 +724,7 @@ void StreamFinderPlugin::RecSesBuf()
 void StreamFinderPlugin::islivebuf() {
     std::string line05;
     std::string IsThisStreamerLive;
-    std::ifstream getpathplz(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-status.txt");
+    std::ifstream getpathplz(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "rec-status.txt");
     while (getline(getpathplz, line05))
     {
         if (line05.empty()) {
@@ -775,7 +775,7 @@ void StreamFinderPlugin::GetAbout() // Used for the blacklist
 void StreamFinderPlugin::RecPathBuf() // Recordings path
 {
     std::string recstring;
-    std::ifstream recdir(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-path.txt");
+    std::ifstream recdir(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "rec-path.txt");
     getline(recdir, recstring);
     // do outside of render func
     memset(&RecPath, 0, _countof(RecPath)); // init char array
@@ -897,7 +897,7 @@ void StreamFinderPlugin::ProcessStatus() {
 
         ImGui::SameLine();
 
-        if (ImGui::Button("View Live Stream", ImVec2(90, 0))) {
+        if (ImGui::Button("View Recording")) {
             ViewSession();
         }
 
@@ -1386,7 +1386,7 @@ void StreamFinderPlugin::OnOpen()
 void StreamFinderPlugin::OnClose()
 {
 	isWindowOpen_ = false;
-    std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "rec-status.txt");
+    std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "rec-status.txt");
     cin << " " << std::endl;
 }
 
