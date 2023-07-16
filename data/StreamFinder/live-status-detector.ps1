@@ -6,10 +6,10 @@ $file = type Path-streamlink.txt
 $global:streamlink_path = (Get-Item $file).directoryname
 cd $p
 
-start-transcript -path "$p\detector-transcript.txt"
+start-transcript -path "$p\transcript-detector.txt"
 echo " "
 
-echo "Stream Finder | Detector Version 1.60"
+echo "Stream Finder | Detector Version 1.61"
 echo "Created by P as in Papi"
 
 Import-Module C:Twitch-Token.psm1
