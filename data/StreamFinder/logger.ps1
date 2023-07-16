@@ -1,7 +1,7 @@
 # COMPONENT FOR THE STREAM FINDER PLUGIN | ROCKET LEAGUE BAKKESMOD
 # By P as in Papi
 
-echo "Stream Finder Logger | Version 0.97"
+echo "Stream Finder Logger | Version 0.97.1"
 
 Import-Module C:Twitch-Token.psm1
 
@@ -12,12 +12,12 @@ function lobbylog {
 	$i++
 	
 	# Name search refinement
-	$names = gc $p\names.txt
-	$botlist = gc $p\botlist.txt
+	$names = gc $p\cache\names.txt
+	$botlist = gc $p\cache\botlist.txt
 	$old_name = $names | select -index $i
-	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
-	$blacklist = gc $p\blacklist-log.txt -erroraction silentlycontinue
-	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
+	$session_blacklist = gc $p\cache\Session-Blacklist.txt -erroraction silentlycontinue
+	$blacklist = gc $p\cache\blacklist-log.txt -erroraction silentlycontinue
+	$perma_blacklist = gc $p\cache\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
 	
 	echo "----------------------------------------------------------0"
@@ -69,11 +69,11 @@ function lobbylog {
 	if ($i -eq 0) {
 		echo "i is equal to 0"
 		$time = get-date -format "t"
-		echo "Time of logging: $time" | Out-File -Encoding Ascii "PeaceOfMind.txt"
+		echo "Time of logging: $time" | Out-File -Encoding Ascii "cache\PeaceOfMind.txt"
 	}
 	
 	if ($botlist -contains $old_name) { # to prevent from searching bots
-		echo "$old_name has been identified as a bot" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+		echo "$old_name has been identified as a bot" | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 		lobbylog
 	}
 	
@@ -83,7 +83,7 @@ function lobbylog {
 	}
 	
 	if ($null -eq $old_name) {
-	echo "No live streamers found." | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	echo "No live streamers found." | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 	lobbylog
 	}
 	
@@ -94,17 +94,17 @@ function lobbylog {
 	$requestRAW03 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/users?login=$specChar"
 	$id = (ConvertFrom-Json ($requestRAW03)).Data | select -expandproperty id
 	if ($null -eq $id) {
-	echo "$old_name has no twitch channel found" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	echo "$old_name has no twitch channel found" | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 	lobbylog
 	}
 	
 	$requestRAW00 = Invoke-WebRequest -Headers (Get-AuthenticationHeaderTwitch) -UseBasicParsing -Uri "https://api.twitch.tv/helix/search/channels?query=$specChar" # Searching the player's name through twitch database
 	$live_status = (ConvertFrom-Json ($requestRAW00)).Data -match "Rocket League" | select -property broadcaster_login, is_live, game_name | where{$_.is_live -match "True"} # Determining whether streamer is live or not
 	if ($live_status -like "*True*") { # Stream information management function | Discord webhook operations
-	echo "$old_name is LIVE on Twitch!" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	echo "$old_name is LIVE on Twitch!" | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 	lobbylog
 	} else {
-	echo "$old_name is not live on twitch." | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	echo "$old_name is not live on twitch." | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 	lobbylog
 	}
 
@@ -116,13 +116,13 @@ function lobbylog {
 	$tD = $time_sum | select -expandproperty days
 
 	if ($tD -ne 0) {
-	echo "$old_name was last live $tD days ago" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	echo "$old_name was last live $tD days ago" | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 	lobbylog
 	}
 
 	$tM = $time_sum | select -expandproperty minutes
 	if ($tM -ne 0) {
-	echo "$old_name was last live $tM minutes ago" | Out-File -Append -Encoding Ascii "PeaceOfMind.txt"
+	echo "$old_name was last live $tM minutes ago" | Out-File -Append -Encoding Ascii "cache\PeaceOfMind.txt"
 	lobbylog
 	}
 	lobbylog

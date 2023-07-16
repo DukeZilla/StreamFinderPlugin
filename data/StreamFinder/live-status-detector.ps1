@@ -2,22 +2,22 @@
 # DO NOT DELETE
 
 $p = (pwd).path
-$file = type Path-streamlink.txt
+$file = type cache\Path-streamlink.txt
 $global:streamlink_path = (Get-Item $file).directoryname
 cd $p
 
-start-transcript -path "$p\transcript-detector.txt"
+start-transcript -path "$p\cache\transcript-detector.txt"
 echo " "
 
-echo "Stream Finder | Detector Version 1.61"
+echo "Stream Finder | Detector Version 1.61.3"
 echo "Created by P as in Papi"
 
 Import-Module C:Twitch-Token.psm1
 
 # Discord webhook linke to variable
 
-$discord_webhook = gc $p\discord-webhook.txt
-$test = gc $p\test-webhook.txt -erroraction silentlycontinue
+$discord_webhook = gc $p\cache\discord-webhook.txt
+$test = gc $p\cache\test-webhook.txt -erroraction silentlycontinue
 
 function test_notif {
 Add-Type -AssemblyName System.Windows.Forms
@@ -67,7 +67,7 @@ iwr -uri $url -method Post -body ($payload | ConvertTo-Json) -ContentType 'Appli
 test_notif
 start $p\sound.vbs
 write-host "Test Complete!"
-del $p\test-webhook.txt
+del $p\cache\test-webhook.txt
 exit
 }
 
@@ -99,13 +99,13 @@ function nameloop {
 	$i++
 	
 	# Name search refinement
-	$names = gc $p\names.txt
-	$botlist = gc $p\botlist.txt
+	$names = gc $p\cache\names.txt
+	$botlist = gc $p\cache\botlist.txt
 	$old_name = $names | select -index $i
 	$restore = $old_name
-	$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
-	$blacklist = gc $p\blacklist.txt -erroraction silentlycontinue
-	$perma_blacklist = gc $p\permanent-blacklist.txt -erroraction silentlycontinue
+	$session_blacklist = gc $p\cache\Session-Blacklist.txt -erroraction silentlycontinue
+	$blacklist = gc $p\cache\blacklist.txt -erroraction silentlycontinue
+	$perma_blacklist = gc $p\cache\permanent-blacklist.txt -erroraction silentlycontinue
 	$name = $names | select -index $i
 	if ($old_name -eq "Search-Request") {nameloop}
 	
@@ -117,8 +117,8 @@ function nameloop {
     if ($null -eq $null_check) { # at the end of the list the loop will break
 		echo "Search halted, reason: null value break"
 		echo "Reached the end of name list."
-		$names > blacklist.txt
-		$names > blacklist-log.txt
+		$names > cache\blacklist.txt
+		$names > cache\blacklist-log.txt
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -145,8 +145,8 @@ function nameloop {
 	# Breakers
 	if ($i -eq  10) { # to prevent from looping more than necessary
 		echo 'Search halted, reason: Max number break'
-		$names > blacklist.txt
-		$names > blacklist-log.txt
+		$names > cache\blacklist.txt
+		$names > cache\blacklist-log.txt
 		echo "----------------------------------------------------------0"
 		echo "Stream search ended."
 		exit
@@ -351,7 +351,7 @@ __*Stream Information*__
 	
 	$el_time = get-date -format "t"
 	
-	echo "$twitch_username was found live on $date" | Out-File -Append -Encoding Ascii "livestreamlog.txt"
+	echo "$twitch_username was found live on $date" | Out-File -Append -Encoding Ascii "cache\livestreamlog.txt"
 	$global:Pom = @("$old_name is LIVE on twitch!",
 					"Time found: $el_time",
 					"Views: $views",
@@ -362,16 +362,16 @@ __*Stream Information*__
 	
 	if (gc $streamlink_path\streamlink.exe) {
 	# Streamlink info
-	echo "TwitchUsr=$twitch_username" | Out-File -Encoding Ascii "streamlink-info.txt"
-	echo "TwitchLink=https://www.twitch.tv/$twitch_username" | Out-File -Append -Encoding Ascii "streamlink-info.txt"
+	echo "TwitchUsr=$twitch_username" | Out-File -Encoding Ascii "cache\streamlink-info.txt"
+	echo "TwitchLink=https://www.twitch.tv/$twitch_username" | Out-File -Append -Encoding Ascii "cache\streamlink-info.txt"
 	
 	# Special Ses text
-	echo "$twitch_username" | Out-File -Encoding Ascii "streamlink-session.txt"
-	echo "Date: $short_date" | Out-File -Append -Encoding Ascii "streamlink-session.txt"
-	echo "VODs: $vod" | Out-File -Append -Encoding Ascii "streamlink-session.txt"
+	echo "$twitch_username" | Out-File -Encoding Ascii "cache\streamlink-session.txt"
+	echo "Date: $short_date" | Out-File -Append -Encoding Ascii "cache\streamlink-session.txt"
+	echo "VODs: $vod" | Out-File -Append -Encoding Ascii "cache\streamlink-session.txt"
 	
 	# For ImGui combo box
-	echo "$twitch_username" | Out-File -Append -Encoding Ascii "Combo-Info00.txt"
+	echo "$twitch_username" | Out-File -Append -Encoding Ascii "cache\Combo-Info00.txt"
 	
 	# Start Streamlink
 	start-process record.vbs
@@ -471,17 +471,17 @@ function WinBallon { # Windows notification
 function SessionBlacklist { # To prevent from repeadetely sending the same live stream notification
 	$el_date = get-date -format "MM/dd/yy"
 	$d00 = "Date: $el_date"
-	if (-not(Test-Path -path $p\Session-Blacklist.txt)) { # Check if file exists
-		echo "$d00" | Out-File -Encoding Ascii "Session-Blacklist.txt"
+	if (-not(Test-Path -path $p\cache\Session-Blacklist.txt)) { # Check if file exists
+		echo "$d00" | Out-File -Encoding Ascii "cache\Session-Blacklist.txt"
 		write-host "Session blacklist created."
 	}
-	$session_blacklist = gc $p\Session-Blacklist.txt
+	$session_blacklist = gc $p\cache\Session-Blacklist.txt
 	$d01 = $session_blacklist | select -index 0
 	if (-not($d01 -eq $d00)) { # Check date
-		echo "$d00"  | Out-File -Encoding Ascii "Session-Blacklist.txt"
+		echo "$d00"  | Out-File -Encoding Ascii "cache\Session-Blacklist.txt"
 		write-host "Session blacklist expired, list reset done."
-		del "Combo-Info00.txt" -force
-		$session_blacklist = gc $p\Session-Blacklist.txt -erroraction silentlycontinue
+		del "cache\Combo-Info00.txt" -force
+		$session_blacklist = gc $p\cache\Session-Blacklist.txt -erroraction silentlycontinue
 	}
 	if ($session_blacklist -match $old_name) { # to prevent from sending a notification of the same live streamer for the entire day
 	echo "Player: $old_name will be blacklisted until tomorrow"
@@ -489,7 +489,7 @@ function SessionBlacklist { # To prevent from repeadetely sending the same live 
 	nameloop
 	}
 	if ($key00 -eq "blacklist") {
-	$Pom | Out-File -Append -Encoding Ascii "Session-Blacklist.txt"
+	$Pom | Out-File -Append -Encoding Ascii "cache\Session-Blacklist.txt"
 	write-host "$old_name has been added to the session blacklist"
 	}
 }

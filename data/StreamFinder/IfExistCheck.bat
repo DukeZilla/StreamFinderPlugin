@@ -34,15 +34,16 @@ for /f "usebackq tokens=5,6,7 delims= " %%g in (`type update.bat ^| findstr /ic:
 echo %updater% >> about.txt
 :: END OF ABOUT FILE
 
-:: Text Files
-IF EXIST PeaceOfMind.txt (echo "Pom Exists") else (echo For logging >> PeaceOfMind.txt)
-IF EXIST Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found today will be logged here >> Session-Blacklist.txt)
-IF EXIST livestreamlog.txt (echo "Log Exists") else (echo Live Streamers Will be logged here. >> livestreamlog.txt)
-IF EXIST streamlink-session.txt (echo "Rec Exists") else (echo None. >> streamlink-session.txt)
-
 :: Folders
 IF EXIST Recordings (echo "Recordings folder exists") else (mkdir Recordings)
 IF EXIST Recordings\thumbnails (echo "Thumbnails exist") else (mkdir Recordings\thumbnails)
+IF EXIST cache (echo "Cache folder exists") else (mkdir cache)
+
+:: Text Files
+IF EXIST cache\PeaceOfMind.txt (echo "Pom Exists") else (echo For logging >> cache\PeaceOfMind.txt)
+IF EXIST cache\Session-Blacklist.txt (echo "Ses Exists") else (echo Streamers found today will be logged here >> cache\Session-Blacklist.txt)
+IF EXIST cache\livestreamlog.txt (echo "Log Exists") else (echo Live Streamers Will be logged here. >> cache\livestreamlog.txt)
+IF EXIST cache\streamlink-session.txt (echo "Rec Exists") else (echo None. >> cache\streamlink-session.txt)
 
 :: VBS Files
 del stream-finder.vbs
@@ -79,8 +80,11 @@ IF EXIST recordings-dir.vbs (echo "Rec dir vbs Exists") else ( echo set shell = 
 	echo shell.run dir00 >> recordings-dir.vbs
 	echo wscript.quit >> recordings-dir.vbs
 	)
-	
+
+echo "VBS files done.
+
 :: Updating the update button
+echo "Updating the updater button ex dee"
 echo $updater = iwr -uri https://raw.githubusercontent.com/DukeZilla/StreamFinderPlugin/main/data/StreamFinder/update.bat > temp.ps1
 echo $updater = $updater.content >> temp.ps1
 echo echo "$updater" ^| Out-File -Encoding Ascii "update.bat" >> temp.ps1
@@ -89,12 +93,17 @@ del temp.ps1
 
 :: Recordings path
 cd Recordings
-echo %cd% > "%back%\rec-path.txt"
+echo %cd% > "%back%\cache\rec-path.txt"
 cd ..
 
 :: Updating file paths
-cd \ & where /r . streamlink.exe > "%back%\Path-00.txt" & cd %back% & findstr /ic:"streamlink" "Path-00.txt" > Path-streamlink.txt
-cd \ & where /r . ffmpeg.exe > "%back%\Path-01.txt" & cd %back% & findstr /ic:"streamlink" "Path-01.txt" > Path-ffmpeg.txt
-del Path-00.txt
-del Path-01.txt
+echo "Updating file paths"
+echo "Streamlink... this may take a minute"
+cd \ & where /r . streamlink.exe > "%back%\cache\Path-00.txt" & cd %back% & findstr /ic:"streamlink" "cache\Path-00.txt" > "%back%\cache\Path-streamlink.txt"
+echo "ffmpeg... this may take another minute"
+cd \ & where /r . ffmpeg.exe > "%back%\cache\Path-01.txt" & cd %back% & findstr /ic:"streamlink" "cache\Path-01.txt" > "%back%\cache\Path-ffmpeg.txt"
+del cache\Path-00Path-00.txt
+del cache\Path-01.txt
+echo DONE!
+timeout 1 > nul
 exit

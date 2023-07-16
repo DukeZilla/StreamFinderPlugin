@@ -4,7 +4,9 @@ title Convert
 PUSHD "%CD%"
 CD /D "%~dp0"
 set back=%cd%
+cd cache
 for /f "usebackq tokens=1,* delims=" %%x in (Path-ffmpeg.txt) do (set ffmpeg=%%x)
+cd ..
 cd Recordings
 set recDir=%cd%
 cls

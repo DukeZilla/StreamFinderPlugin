@@ -1,5 +1,5 @@
 $p = (pwd).path
-$file = gc $p\file.txt
+$file = gc $p\cache\file.txt
 $line00 = $file | select -index 7
 $line01 = $line00 -split 'x' | select -index 0
 $line02 = $line00 -split 'x' | select -index 1
@@ -48,7 +48,7 @@ $accessToken = Get-TwitchAccessToken
 $authHeadTwitch = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
 $authHeadTwitch = @{}
 $authHeadTwitch.Add("Authorization","Bearer "+$accessToken.accesstoken)
-$authHeadTwitch.Add("Client-ID", $Value03)
+$authHeadTwitch.Add("Client-ID", "4xeemdr46tyggrk8nuwmcw1l44ln63")
 return $authHeadTwitch
 }
 
