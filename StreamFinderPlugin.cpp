@@ -73,7 +73,7 @@ void StreamFinderPlugin::onLoad()
 	outfile01 << str08 << endl;
 	outfile01 << str09 << endl;
 	outfile01.close();
-
+	
 	previewSize_ = std::make_shared<int>(0);
 	previewSizeCVar = std::make_unique<CVarWrapper>(cvarManager->registerCvar("bswl_preview_size", "0", "", false, true, 0, true, 2, true));
 	previewSizeCVar->bindTo(previewSize_);
@@ -148,7 +148,7 @@ std::vector<std::string> StreamFinderPlugin::GetPlayersNames()
 void StreamFinderPlugin::HandleGameStart(std::string eventName)
 {
 	std::vector<std::string> playersNames = GetPlayersNames(); //playersNames equals to what returns GetPlayersNames()
-	std::ofstream stream(gameWrapper->GetDataFolder() / "StreamFinder" / "names.txt");
+	std::ofstream stream(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "names.txt");
 	for (std::string name : playersNames)
 	{
 		cvarManager->log(name);
@@ -197,7 +197,7 @@ static bool IsProcessRunning(const wchar_t* processName) {
 
 void StreamFinderPlugin::Refresh(std::string eventName)
 {	
-	std::ofstream bl(gameWrapper->GetDataFolder() / "StreamFinder" / "blacklist-log.txt");
+	std::ofstream bl(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "blacklist-log.txt");
 	bl << " " << std::endl;
 	bl.close();
 
@@ -260,7 +260,7 @@ void StreamFinderPlugin::RecNotif(std::string eventName)
 
 void StreamFinderPlugin::onUnload()
 {
-	std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "file.txt");
+	std::ofstream cin(gameWrapper->GetDataFolder() / "StreamFinder" / "cache" / "file.txt");
 	cin << " " << std::endl;
 }
 
