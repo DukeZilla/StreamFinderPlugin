@@ -9,7 +9,7 @@ cd $p
 start-transcript -path "$p\cache\transcript-detector.txt"
 echo " "
 
-echo "Stream Finder | Detector Version 1.61.3"
+echo "Stream Finder | Detector Version 1.62"
 echo "Created by P as in Papi"
 
 Import-Module C:Twitch-Token.psm1
@@ -187,6 +187,7 @@ function nameloop {
 	if ($old_name -like "*t.tv*") {$global:amount = "check"}
 	if ($old_name -like "*tiktok*") {$global:amount = "check"}
 	if ($old_name -like "*yt*") {$global:amount = "check"}
+	if ($old_name -like "*rl*") {$global:amount = "check"}
 	if ($old_name -like "*youtube*") {$global:amount = "check"}
 	if ($global:amount -eq "check") {validation}
 	$global:amount = "pass"
@@ -234,6 +235,12 @@ function validation {
 	if ($name -match "twitch") { # Split "twitch" from player name
 		$name = $name -split "twitch"
 		echo 'twitch name split'
+	}
+	
+	if ($name -match "rl") { # Split "rl" from player name
+		$name = $name -split "rl "
+		$name = $name -split "rl"
+		echo 'RL name split'
 	}
 	
 	$name = $name.trim('')
